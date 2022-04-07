@@ -11,7 +11,7 @@ MongoClient.connect(uri, (err, client) => {
   db = client.db('representacao')
 
   app.listen(process.env.PORT || 3000, function(){
-    console.log("Server running na porta 3000")
+    console.log("Express server listening on port %d in %s mode", this.address().port, app.settings.env);
   })
 })
 app.set('view engine', 'ejs')
