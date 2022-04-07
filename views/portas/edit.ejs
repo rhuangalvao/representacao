@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Representações</title>
+</head>
+<body>
+<h2>Editar Porta</h2>
+
+  <% data.forEach(function(details) { %>
+    <form action="/portas/edit/<%= details._id %>" method="POST">
+      <input type="text" value="<%= details.codigo %>" name="codigo">
+      <input type="text" value="<%= details.nome %>" name="nome">
+      <input type="text" value="<%= details.valor %>" name="valor">
+      <br/>
+      <button><a href="/portas/show">Voltar</a></button>
+      <button type="submit">Editar</button>
+    </form>
+  <% }) %>
+</body>
+</html>
