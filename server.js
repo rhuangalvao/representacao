@@ -10,7 +10,7 @@ MongoClient.connect(uri, (err, client) => {
   if(err) return console.log(err)
   db = client.db('representacao')
 
-  app.listen(3000, function(){
+  app.listen(process.env.PORT || 3000, function(){
     console.log("Server running na porta 3000")
   })
 })
