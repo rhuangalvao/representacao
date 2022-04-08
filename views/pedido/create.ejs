@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Representações</title>
+</head>
+<body>
+    <h2>Novo pedido<h2>
+    <div class="card">
+      <div class="card-body">
+        <form action="/pedido/show" method="POST">
+            <select>
+              <% data.forEach(function(details) { %>
+              <option value="<%= details.razaosocial %>" name="razaosocial"><%= details.razaosocial %></option>
+              <% }) %>
+            </select>
+            <button type="submit">Enviar</button>
+        </form>
+        <button><a href="/empresa/show">Voltar</a></button>
+      </div>
+    </div>
+</body>
+</html>

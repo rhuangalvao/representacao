@@ -10,6 +10,7 @@
   <% data.forEach(function(details) { %>
     <form action="/empresa/edit/<%= details._id %>" method="POST">
       <input type="text" value="<%= details.razaosocial %>" name="razaosocial">
+      <input type="text" value="<%= details.nomefantasia %>" name="nomefantasia">
       <input type="text" value="<%= details.endereco %>" name="endereco">
       <input type="text" value="<%= details.cidade %>" name="cidade">
       <input type="text" value="<%= details.cep %>" name="cep">
@@ -23,6 +24,6 @@
       <button type="submit">Editar</button>
     </form>
   <% }) %>
-  
+
 </body>
 </html>

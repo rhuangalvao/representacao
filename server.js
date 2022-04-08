@@ -9,7 +9,6 @@ var ObjectId = require('mongodb').ObjectID;
 MongoClient.connect(uri, (err, client) => {
   if(err) return console.log(err)
   db = client.db('representacao')
-
   app.listen(process.env.PORT || 3000, function(){
     console.log("Express server listening on port %d in %s mode", this.address().port, app.settings.env);
   })
@@ -111,6 +110,7 @@ app.route('/empresa/edit/:id')
 .post((req, res) =>{
   var id = req.params.id
   var razaosocial = req.body.razaosocial
+  var nomefantasia = req.body.nomefantasia
   var endereco = req.body.endereco
   var cidade = req.body.cidade
   var cep = req.body.cep
@@ -123,6 +123,7 @@ app.route('/empresa/edit/:id')
   db.collection('empresa').updateOne({_id: ObjectId(id)}, {
     $set: {
       razaosocial: razaosocial,
+      nomefantasia: nomefantasia,
       endereco: endereco,
       cidade: cidade,
       cep: cep,
@@ -147,4 +148,28 @@ app.route('/empresa/delete/:id')
     console.log('Deletado do Banco de dados');
     res.redirect('/empresa/show')
   })
+})
+
+
+//Rotas do CRUD PEDIDO --------------------------------------------------------
+//CREATE
+app.get('/pedido/create', (req, res) => {
+    db.collection('empresa').find().toArray((err, results) => {
+        if (err) return console.log(err)
+        res.render('pedido/create.ejs', { data: results })
+    })
+})
+//SHOW
+app.get('/pedido/show', (req, res) => {
+    db.collection('pedido').find().toArray((err, results) => {
+        if (err) return console.log(err)
+        res.render('pedido/show.ejs', { data: results })
+    })
+})
+app.post('/pedido/show', (req, res) => {
+    db.collection('pedido').save(req.body, (err, result) => {
+        if (err) return console.log(err)
+        console.log('Salvo no Banco de Dados')
+        res.redirect('/pedido/show')
+    })
 })
