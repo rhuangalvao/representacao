@@ -8,17 +8,15 @@
 <div class="container">
 <h2><a class="mt-1" href="/">Início</a></h2>
 
-<h2>Portas</h2>
-  <a class="btn btn-primary mb-1" href="/portas/create" role="button">Adicionar porta</a>
-  <a class="btn btn-info mb-1" href="/portas/valor/create" role="button">Atualizar valores das portas</a>
+<h2>Valores das Portas</h2>
+  <a class="btn btn-primary mb-1" href="/portas/valor/create" role="button">Adicionar valor porta</a>
 
   <section class="data">
     <div class="table-responsive">
       <table class="datatable table table-bordered table-striped table-hover" data-table-source="" data-table-filter-target>
         <thead>
           <tr>
-            <th scope="col">Código</th>
-            <th scope="col">Nome</th>
+            <th scope="col">Descrição</th>
             <th scope="col">Valor</th>
             <th scope="col">Ações</th>
           </tr>
@@ -28,8 +26,7 @@
               <tr>
                   <td><%= details.codigo %></td>
                   <td><%= details.nome %></td>
-                  <td><%= details.valor %></td>
-                  <td><a href="/portas/edit/<%= details._id %>">Editar</a> - <a href="/portas/delete/<%= details._id %>">Deletar</a></td>
+                  <td><a href="/portas/valor/edit/<%= details._id %>">Editar</a> - <a href="/portas/valor/delete/<%= details._id %>">Deletar</a></td>
               </tr>
               <% }) %>
         </tbody>

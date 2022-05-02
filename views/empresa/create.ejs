@@ -2,27 +2,80 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <title>My CRUD in NodeJS</title>
 </head>
 <body>
-    <h2>Registrar Porta<h2>
+  <div class="container">
     <div class="card">
-      <div class="card-body">
+      <div class="card-body w-50 p-3 mx-auto" style="background-color: #eee;">
+        <h2>Registrar Empresa</h2>
         <form action="/empresa/show" method="POST">
-            <input type="text" placeholder="Razão Social" name="razaosocial">
-            <input type="text" placeholder="Nome Fantasia" name="nomefantasia">
-            <input type="text" placeholder="Endereço" name="endereco">
-            <input type="text" placeholder="Cidade" name="cidade">
-            <input type="text" placeholder="CEP" name="cep">
-            <input type="text" placeholder="CNPJ" name="cnpj">
-            <input type="text" placeholder="Inscrição Estadual" name="ie">
-            <input type="text" placeholder="Email" name="email">
-            <input type="text" placeholder="Telefone" name="telefone">
-            <input type="text" placeholder="Comprador" name="comprador">
-            <button type="submit">Enviar</button>
+          <div class="column-3 column label">
+            <label for="txtLogon">Razão Social</label>
+          </div>
+          <div class="column-9 column input">
+            <input class="form-control" type="text" name="razaosocial">
+          </div>
+          <div class="column-3 column label">
+            <label for="txtLogon">Nome Fantasia</label>
+          </div>
+          <div class="column-9 column input">
+            <input class="form-control" type="text" name="nomefantasia">
+          </div>
+          <div class="column-3 column label">
+            <label for="txtLogon">Endereço</label>
+          </div>
+          <div class="column-9 column input">
+          <input class="form-control" type="text" name="endereco">
+          </div>
+          <div class="column-3 column label">
+            <label for="txtLogon">Cidade</label>
+          </div>
+          <div class="column-9 column input">
+          <input class="form-control" type="text" name="cidade">
+          </div>
+          <div class="column-3 column label">
+            <label for="txtLogon">CEP</label>
+          </div>
+          <div class="column-9 column input">
+          <input class="form-control" type="text" name="cep">
+          </div>
+          <div class="column-3 column label">
+            <label for="txtLogon">CNPJ</label>
+          </div>
+          <div class="column-9 column input">
+          <input class="form-control" type="text" name="cnpj">
+          </div>
+          <div class="column-3 column label">
+            <label for="txtLogon">Inscrição Estadual</label>
+          </div>
+          <div class="column-9 column input">
+          <input class="form-control" type="text" name="ie">
+          </div>
+          <div class="column-3 column label">
+            <label for="txtLogon">Email</label>
+          </div>
+          <div class="column-9 column input">
+          <input class="form-control" type="text" name="email">
+          </div>
+          <div class="column-3 column label">
+            <label for="txtLogon">Telefone</label>
+          </div>
+          <div class="column-9 column input">
+          <input class="form-control" type="text" name="telefone">
+          </div>
+          <div class="column-3 column label">
+            <label for="txtLogon">Comprador</label>
+          </div>
+          <div class="column-9 column input">
+          <input class="form-control" type="text" name="comprador">
+          </div>
+          <a class="btn btn-secondary mt-1" href="/empresa/show">Voltar</a>
+          <button class="btn btn-success float-right mt-1" type="submit">Salvar</button>
         </form>
-        <button><a href="/empresa/show">Voltar</a></button>
       </div>
     </div>
+  </div>
 </body>
 </html>

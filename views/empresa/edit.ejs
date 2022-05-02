@@ -2,28 +2,85 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <title>Representações</title>
 </head>
 <body>
-<h2>Editar Porta</h2>
 
-  <% data.forEach(function(details) { %>
-    <form action="/empresa/edit/<%= details._id %>" method="POST">
-      <input type="text" value="<%= details.razaosocial %>" name="razaosocial">
-      <input type="text" value="<%= details.nomefantasia %>" name="nomefantasia">
-      <input type="text" value="<%= details.endereco %>" name="endereco">
-      <input type="text" value="<%= details.cidade %>" name="cidade">
-      <input type="text" value="<%= details.cep %>" name="cep">
-      <input type="text" value="<%= details.cnpj %>" name="cnpj">
-      <input type="text" value="<%= details.ie %>" name="ie">
-      <input type="text" value="<%= details.email %>" name="email">
-      <input type="text" value="<%= details.telefone %>" name="telefone">
-      <input type="text" value="<%= details.comprador %>" name="comprador">
-      <br/>
-      <button><a href="/empresa/show">Voltar</a></button>
-      <button type="submit">Editar</button>
-    </form>
-  <% }) %>
+  <div class="container">
+    <div class="card">
+      <div class="card-body w-50 p-3 mx-auto" style="background-color: #eee;">
+        <h2>Registrar Empresa</h2>
+        <% data.forEach(function(details) { %>
+          <form action="/empresa/edit/<%= details._id %>" method="POST">
+          <div class="column-3 column label">
+            <label for="txtLogon">Razão Social</label>
+          </div>
+          <div class="column-9 column input">
+            <input class="form-control" type="text" name="razaosocial" value="<%= details.razaosocial %>">
+          </div>
+          <div class="column-3 column label">
+            <label for="txtLogon">Nome Fantasia</label>
+          </div>
+          <div class="column-9 column input">
+            <input class="form-control" type="text" name="nomefantasia" value="<%= details.nomefantasia %>">
+          </div>
+          <div class="column-3 column label">
+            <label for="txtLogon">Endereço</label>
+          </div>
+          <div class="column-9 column input">
+          <input class="form-control" type="text" name="endereco" value="<%= details.endereco %>">
+          </div>
+          <div class="column-3 column label">
+            <label for="txtLogon">Cidade</label>
+          </div>
+          <div class="column-9 column input">
+          <input class="form-control" type="text" name="cidade" value="<%= details.cidade %>">
+          </div>
+          <div class="column-3 column label">
+            <label for="txtLogon">CEP</label>
+          </div>
+          <div class="column-9 column input">
+          <input class="form-control" type="text" name="cep" value="<%= details.cep %>">
+          </div>
+          <div class="column-3 column label">
+            <label for="txtLogon">CNPJ</label>
+          </div>
+          <div class="column-9 column input">
+          <input class="form-control" type="text" name="cnpj" value="<%= details.cnpj %>">
+          </div>
+          <div class="column-3 column label">
+            <label for="txtLogon">Inscrição Estadual</label>
+          </div>
+          <div class="column-9 column input">
+          <input class="form-control" type="text" name="ie" value="<%= details.ie %>">
+          </div>
+          <div class="column-3 column label">
+            <label for="txtLogon">Email</label>
+          </div>
+          <div class="column-9 column input">
+          <input class="form-control" type="text" name="email" value="<%= details.email %>">
+          </div>
+          <div class="column-3 column label">
+            <label for="txtLogon">Telefone</label>
+          </div>
+          <div class="column-9 column input">
+          <input class="form-control" type="text" name="telefone" value="<%= details.telefone %>">
+          </div>
+          <div class="column-3 column label">
+            <label for="txtLogon">Comprador</label>
+          </div>
+          <div class="column-9 column input">
+          <input class="form-control" type="text" name="comprador" value="<%= details.comprador %>">
+          </div>
+          <a class="btn btn-secondary mt-1" href="/empresa/show">Voltar</a>
+          <button class="btn btn-success float-right mt-1" type="submit">Editar</button>
+        </form>
+        <% }) %>
+
+      </div>
+    </div>
+  </div>
 
 </body>
 </html>

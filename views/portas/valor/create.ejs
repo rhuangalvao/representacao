@@ -9,25 +9,19 @@
   <div class="container">
     <div class="card">
       <div class="card-body  w-50 p-3 mx-auto" style="background-color: #eee;">
-        <h2>Registrar Porta</h2>
-        <form action="/portas/show" method="POST">
+        <h2>Registrar Valor Porta</h2>
+        <form action="/portas/valor/show" method="POST">
           <div class="column-3 column label">
-            <label>Código</label>
+            <label>Descrição</label>
           </div>
           <div class="column-9 column input">
-            <input class="form-control" type="text" name="codigo">
-          </div>
-          <div class="column-3 column label">
-            <label>Nome</label>
-          </div>
-          <div class="column-9 column input">
-            <input class="form-control" type="text" name="nome">
+            <input class="form-control" type="text" name="descricao">
           </div>
           <div class="column-3 column label">
             <label>Valor</label>
           </div>
           <div class="column-9 column input">
-          <input class="form-control" type="text" name="valor">
+            <input class="form-control" type="text" name="valor">
           </div>
           <a class="btn btn-secondary mt-1" href="/portas/show">Voltar</a>
           <button class="btn btn-success float-right mt-1" type="submit">Salvar</button>

@@ -1,0 +1,4 @@
+@echo off
+cd C:\Users\huanl\Documents\Projetos\representacao
+start http://localhost:3000
+npm run dev
