@@ -6,10 +6,11 @@
   <title>Portas</title>
 </head>
 <body>
-  <div id="container">
-    <div class="card">
-      <div class="card-body w-50 p-3 mx-auto" style="background-color: #eee;">
-        <h2>Editar Porta</h2>
+  <div class="container">
+    <div class="card" style="background-color: #eee;">
+      <h2><a class="mt-1" href="/">Início</a></h2>
+      <h2><a href="/portas/show">Portas/</a>Editar Porta</h2>
+      <div class="card-body w-50 p-3 mx-auto" >
         <% data.forEach(function(details) { %>
           <form action="/portas/edit/<%= details._id %>" method="POST">
             <div class="column-3 column label">
@@ -33,7 +34,7 @@
             <a class="btn btn-secondary mt-1" href="/portas/show">Voltar</a>
             <button class="btn btn-success float-right mt-1" type="submit">Editar</button>
           </form>
-        <% }) %>    
+        <% }) %>
       </div>
     </div>
   </div>

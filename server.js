@@ -31,37 +31,6 @@ app.get('/', (req, res) => {
 app.get('/portas/create', (req, res) => {
     res.render('portas/create.ejs')
 })
-//Atualizar valor porta
-app.get('/portas/autalizarvalores', (req, res) => {
-  db.collection('portas').find().toArray((err, results) => {
-      if (err) return console.log(err)
-      var valorPorta = []
-      results.forEach(function(details) {
-        valorPorta.push(details.valor)
-      })
-      var valorSemRepeticao = valorPorta.filter(function(este, i) {
-          return valorPorta.indexOf(este) === i;
-      });
-      valorSemRepeticao.sort()
-      res.render('portas/atualizarvalores.ejs', { data: valorSemRepeticao })
-  })
-})
-//Atualizar valor porta
-app.post('/portas/autalizarvalores', (req, res) => {
-  db.collection('portas').find().toArray((err, results) => {
-      if (err) return console.log(err)
-      console.log(req.body);
-      var aux = req.body
-      console.log(aux);
-      // results.forEach(function(details) {
-      //   if (req.body.details.valor == details.valor) {
-      //     details.valor = req.body.details.valor
-      //     console.log(req.body.details.valor);
-      //   }
-      // })
-      res.redirect('/portas/show')
-  })
-})
 //SHOW
 app.get('/portas/show', (req, res) => {
     db.collection('portas').find().toArray((err, results) => {
@@ -118,6 +87,50 @@ app.route('/portas/delete/:id')
 //CREATE
 app.get('/portas/valor/create', (req, res) => {
     res.render('portas/valor/create.ejs')
+})
+app.get('/portas/valor/atualizarChaveEstrangeiraTabelaPortas', (req, res) => {
+    db.collection('portasValor').find().toArray((err, results1) => {
+        if (err) return console.log(err)
+        db.collection('portas').find().toArray((err, results2) => {
+          results1.forEach(function(portaValor) {
+            results2.forEach(function(porta) {
+              if (portaValor.valor == porta.valor) {
+                db.collection('portas').updateOne({_id: ObjectId(porta._id)}, {
+                  $set: {
+                    foreignValor: portaValor.descricao
+                  }
+                },(err, result)=>{
+                  if(err) return res.send(err)
+                  console.log("Atualizado foreignValor porta:" + porta.codigo);
+                })
+              }
+            })
+          })
+          res.redirect('/portas/valor/show')
+        })
+    })
+})
+app.get('/portas/valor/atualizarValorTabelaPortas', (req, res) => {
+    db.collection('portasValor').find().toArray((err, results1) => {
+        if (err) return console.log(err)
+        db.collection('portas').find().toArray((err, results2) => {
+          results1.forEach(function(portaValor) {
+            results2.forEach(function(porta) {
+              if (portaValor.descricao == porta.foreignValor) {
+                db.collection('portas').updateOne({_id: ObjectId(porta._id)}, {
+                  $set: {
+                    valor: portaValor.valor
+                  }
+                },(err, result)=>{
+                  if(err) return res.send(err)
+                  console.log("Atualizado valor porta:" + porta.codigo);
+                })
+              }
+            })
+          })
+          res.redirect('/portas/valor/show')
+        })
+    })
 })
 //SHOW
 app.get('/portas/valor/show', (req, res) => {
@@ -366,7 +379,15 @@ app.post('/pedido/gerarPlanilha', (req, res) => {
 
           // CRIAR A PLANILHA
           const wb = new xl.Workbook();
-          const ws = wb.addWorksheet('Worksheet Name');
+
+          var options = {
+            headerFooter: {
+              evenHeader: '&24&PEDIDO PORTAS SALETE&24',
+              firstHeader: '&24PEDIDO PORTAS SALETE&24',
+              oddHeader: '&24PEDIDO PORTAS SALETE&24',
+            },
+          };
+          const ws = wb.addWorksheet('Worksheet Name', options);
 
           var colunaData = wb.createStyle({
             alignment: {
@@ -466,7 +487,10 @@ app.post('/pedido/gerarPlanilha', (req, res) => {
 
           // const destino = 'G:/.shortcut-targets-by-id/id/Galvão Repr/Salete Portas externas/A Pedidos/'
           // const destino = 'C:/Users/huanl/Documents/Projetos/'
-          const nomeDoPedido = "Pedido " + result3[0].nomefantasia + " " + reformatDate(result1[0].data) + " " + result1.valor_total.replace(".", ",") + ".xlsx";
+          var numero =  parseInt(result1.valor_total);
+          var dinheiro = numero.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
+          var total = dinheiro.slice(3, dinheiro.lenght);
+          const nomeDoPedido = "Pedido " + result3[0].nomefantasia + " " + reformatDate(result1[0].data) + " " + total + ".xlsx";
           wb.write(nomeDoPedido);
           console.log('Arquivo local criado!');
           myTimeout = setTimeout(uploadFileSalete, 3000, nomeDoPedido);
@@ -484,7 +508,7 @@ function deleteLocalFile (nomeDoPedido){
   fs.unlink(nomeDoPedido, function (err){
     if (err) throw err;
     console.log('Arquivo local deletado!');
-})
+  })
 }
 
 function uploadFileSalete (nomeDoPedido){

@@ -6,31 +6,26 @@
   <title>Portas</title>
 </head>
 <body>
-  <div id="container">
-    <div class="card">
-      <div class="card-body w-50 p-3 mx-auto" style="background-color: #eee;">
-        <h2>Editar Porta</h2>
+  <div class="container">
+    <div class="card" style="background-color: #eee;">
+      <h2><a class="mt-1" href="/">Início</a></h2>
+      <h2><a href="/portas/show">Portas/</a><a href="/portas/valor/show">Valores das Portas/</a>Editar Valor Porta</h2>
+      <div class="card-body w-50 p-3 mx-auto" >
         <% data.forEach(function(details) { %>
-          <form action="/portas/edit/<%= details._id %>" method="POST">
+          <form action="/portas/valor/edit/<%= details._id %>" method="POST">
             <div class="column-3 column label">
-              <label for="txtLogon">Código</label>
+              <label for="txtLogon">Descrição</label>
             </div>
             <div class="column-9 column input">
-              <input class="form-control" type="text" placeholder="Código" name="codigo" value="<%= details.codigo %>">
-            </div>
-            <div class="column-3 column label">
-              <label for="txtLogon">Nome</label>
-            </div>
-            <div class="column-9 column input">
-              <input class="form-control" type="text" placeholder="Nome" name="nome" value="<%= details.nome %>">
+              <input class="form-control" type="text" name="descricao" value="<%= details.descricao %>">
             </div>
             <div class="column-3 column label">
               <label for="txtLogon">Valor</label>
             </div>
             <div class="column-9 column input">
-            <input class="form-control" type="text" placeholder="Valor" name="valor" value="<%= details.valor %>">
+            <input class="form-control" type="text" name="valor" value="<%= details.valor %>">
             </div>
-            <button class="btn btn-secondary mt-1" href="/portas/show">Voltar</button>
+            <a class="btn btn-secondary mt-1" href="/portas/valor/show">Voltar</a>
             <button class="btn btn-success float-right mt-1" type="submit">Editar</button>
           </form>
         <% }) %>

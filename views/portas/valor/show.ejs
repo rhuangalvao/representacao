@@ -7,9 +7,9 @@
 <body>
 <div class="container">
 <h2><a class="mt-1" href="/">Início</a></h2>
-
-<h2>Valores das Portas</h2>
+<h2><a href="/portas/show">Portas/</a>Valores das Portas</h2>
   <a class="btn btn-primary mb-1" href="/portas/valor/create" role="button">Adicionar valor porta</a>
+  <a class="btn btn-success mb-1" href="/portas/valor/atualizarValorTabelaPortas" role="button">Atualizar Tabela Portas</a>
 
   <section class="data">
     <div class="table-responsive">
@@ -24,8 +24,8 @@
         <tbody>
           <% data.forEach(function(details) { %>
               <tr>
-                  <td><%= details.codigo %></td>
-                  <td><%= details.nome %></td>
+                  <td><%= details.descricao %></td>
+                  <td><%= details.valor %></td>
                   <td><a href="/portas/valor/edit/<%= details._id %>">Editar</a> - <a href="/portas/valor/delete/<%= details._id %>">Deletar</a></td>
               </tr>
               <% }) %>
@@ -33,7 +33,7 @@
       </table>
     </div>
   </section>
-<a class="btn btn-secondary mt-1" href="/">Voltar</a>
+<a class="btn btn-secondary mt-1" href="/portas/show">Voltar</a>
 </div>
 </body>
 </html>
