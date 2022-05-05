@@ -8,65 +8,61 @@
   <div class="container">
     <div class="card">
       <div class="card-body  w-50 p-3 mx-auto" style="background-color: #eee;">
-        <h2>Novo pedido</h2>
+        <h2>Adicionar produto</h2>
         <div class="card">
           <div class="card-body">
-            <form action="/pedido/salvarempresa" method="POST">
+            <form action="/pedido/salvarproduto" method="POST">
+              <input hidden name="pedido_id" value="<%= pedido_id %>"></input>
               <div class="column-3 column label">
-                <label>Representada</label>
+                <label>Quantidade</label>
               </div>
               <div class="column-9 column input">
-                <select class="form-control" id="representada" name="representada" >
-                  <% representada.forEach(function(details) { %>
-                  <option name="representada" value="<%= details.nome %>"><%= details.nome %></option>
+                <input class="form-control" name="quantidade" type="number" value="1">
+              </div>
+
+              <div class="column-3 column label">
+                <label>Código produto</label>
+              </div>
+              <div class="column-9 column input">
+                <select class="form-control"  id="codigoporta" name="codigo">
+                  <% data1.forEach(function(details) { %>
+                  <option value="<%= details.codigo %>" name="codigo"><%= details.codigo %> - <%= details.nome %></option>
                   <% }) %>
                 </select>
               </div>
+
               <div class="column-3 column label">
-                <label>Empresa</label>
+                <label>Tamanho</label>
               </div>
               <div class="column-9 column input">
-                <select class="form-control" id="razaosocial_id" name="razaosocial_id" >
-                  <% empresa.forEach(function(details) { %>
-                  <option name="razaosocial" value="<%= details._id %>"><%= details.razaosocial %></option>
+                <select class="form-control" id="tamanhoporta" name="tamanho">
+                  <option value="80">80</option>
+                  <% data2.forEach(function(details) { %>
+                  <option value="<%= details.tamanho %>" name="tamanho"><%= details.tamanho %></option>
                   <% }) %>
                 </select>
               </div>
-              <div class="column-3 column label">
-                <label>empresa</label>
-              </div>
-              <div class="column-9 column input">
-                <input id="datePicker" class="datePicker form-control" type="date" name="data"/>
-              </div>
-              <br>
-              <button class="btn btn-primary float-right mt-1" type="submit">Próximo</button>
+
+              <button class="btn btn-success float-right mt-1" type="submit">Adicionar</button>
               <a class="btn btn-secondary mt-1" href="/pedido/listarPedidos">Voltar</a>
             </form>
+            <br>
+            <a class="btn btn-primary mt-1" href="/pedido/mostrarLista/<%= pedido_id %>">Mostrar Lista</a>
           </div>
         </div>
       </div>
     </div>
   </div>
+
 </body>
 </html>
+
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
 <script>
-$(document).ready( function() {
-    var now = new Date();
-    var month = (now.getMonth() + 1);
-    var day = now.getDate();
-    if (month < 10)
-        month = "0" + month;
-    if (day < 10)
-        day = "0" + day;
-    var today = now.getFullYear() + '-' + month + '-' + day;
-    $('#datePicker').val(today);
-});
-
 (function($){
 
   var select2Init = function(){

@@ -21,7 +21,7 @@
               </div>
 
               <div class="column-3 column label">
-                <label>Código porta</label>
+                <label>Código produto</label>
               </div>
               <div class="column-9 column input">
                 <select class="form-control"  id="codigoporta" name="codigo">
@@ -30,20 +30,7 @@
                   <% }) %>
                 </select>
               </div>
-
-              <div class="column-3 column label">
-                <label>Tamanho</label>
-              </div>
-              <div class="column-9 column input">
-                <select class="form-control" id="tamanhoporta" name="tamanho">
-                  <option value="80">80</option>
-                  <% data2.forEach(function(details) { %>
-                  <option value="<%= details.tamanho %>" name="tamanho"><%= details.tamanho %></option>
-                  <% }) %>
-                </select>
-              </div>
-
-              <button class="btn btn-success float-right mt-1" type="submit">Próximo</button>
+              <button class="btn btn-success float-right mt-1" type="submit">Adicionar</button>
               <a class="btn btn-secondary mt-1" href="/pedido/listarPedidos">Voltar</a>
             </form>
             <br>
@@ -68,6 +55,7 @@
   var select2Init = function(){
     $('select').select2({
       width: 'resolve',
+      sorter: data => data.sort((a, b) => a.text.localeCompare(b.text)),
     });
   };
 
