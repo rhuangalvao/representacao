@@ -291,6 +291,8 @@ app.route('/empresa/edit/:id')
   var razaosocial = req.body.razaosocial
   var nomefantasia = req.body.nomefantasia
   var endereco = req.body.endereco
+  var numero = req.body.numero
+  var bairro = req.body.bairro
   var cidade = req.body.cidade
   var cep = req.body.cep
   var cnpj = req.body.cnpj
@@ -304,6 +306,8 @@ app.route('/empresa/edit/:id')
       razaosocial: razaosocial,
       nomefantasia: nomefantasia,
       endereco: endereco,
+      numero: numero,
+      bairro: bairro,
       cidade: cidade,
       cep: cep,
       cnpj: cnpj,
@@ -563,6 +567,13 @@ app.post('/pedido/gerarPlanilhaSalete', (req, res) => {
               firstHeader: '&24PEDIDO PORTAS SALETE&24',
               oddHeader: '&24PEDIDO PORTAS SALETE&24',
             },
+            margins: {
+              left: 0.3,
+              right: 0.3,
+            },
+            printOptions: {
+              centerHorizontal: true,
+            },
           };
           const ws = wb.addWorksheet('Worksheet Name', options);
 
@@ -610,12 +621,12 @@ app.post('/pedido/gerarPlanilhaSalete', (req, res) => {
           });
 
           ws.column(2).setWidth(15);
-          ws.column(2).setWidth(45);
+          ws.column(2).setWidth(52);
           ws.column(3).setWidth(12);
           ws.column(4).setWidth(12);
 
           ws.cell(1, 1).string(result3[0].razaosocial);
-          ws.cell(2, 1).string(result3[0].endereco + " - "+result3[0].cidade);
+          ws.cell(2, 1).string(result3[0].endereco + ", " + result3[0].numero + " - "+result3[0].bairro + " - "+result3[0].cidade + "- PR");
           ws.cell(3, 1).string(result3[0].cnpj + " " + result3[0].ie);
           ws.cell(4, 1).string("EMAIL");
           ws.cell(4, 2).string(result3[0].email);
@@ -650,7 +661,7 @@ app.post('/pedido/gerarPlanilhaSalete', (req, res) => {
           ws.cell(linhaIndex++, 2).string("CAPRICHAR NA QUALIDADE.").style(negrito);
           ws.cell(linhaIndex++, 2).string("MANDAR A NF CONFORME ESCRITO NO PEDIDO.").style(negrito);
           ws.cell(linhaIndex++, 2).string("MANDAR BOLETO JUNTO COM A NF.").style(negrito);
-          ws.cell(linhaIndex++, 2).string("TODAS FURADAS.").style(negrito);
+          ws.cell(linhaIndex++, 2).string("FURADAS, AS QUE NÃO TEM LADO").style(negrito);
           linhaIndex++;
 
           ws.cell(linhaIndex++, 2).string("GALVÃO").style(negrito);
@@ -819,7 +830,7 @@ app.post('/pedido/gerarPlanilhaArgacel', (req, res) => {
           ws.column(4).setWidth(12);
 
           ws.cell(1, 1).string(result3[0].razaosocial);
-          ws.cell(2, 1).string(result3[0].endereco + " - "+result3[0].cidade);
+          ws.cell(2, 1).string(result3[0].endereco + ", " + result3[0].numero + " - "+result3[0].bairro + " - "+result3[0].cidade + "- PR");
           ws.cell(3, 1).string(result3[0].cnpj + " " + result3[0].ie);
           ws.cell(4, 1).string("EMAIL");
           ws.cell(4, 2).string(result3[0].email);
