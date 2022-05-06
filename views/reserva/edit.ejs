@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <title>Reserva</title>
+</head>
+<body>
+  <div class="container">
+    <div class="card" style="background-color: #eee;">
+      <h2><a class="mt-1" href="/">Início</a></h2>
+      <h2><a href="/reserva/show">Reserva/</a>Editar Produto</h2>
+      <div class="card-body w-50 p-3 mx-auto" >
+        <% data.forEach(function(details) { %>
+          <form action="/reserva/edit/<%= details._id %>" method="POST">
+            <div class="column-3 column label">
+              <label for="txtLogon">Código</label>
+            </div>
+            <div class="column-9 column input">
+              <input class="form-control" type="text" placeholder="Código" name="codigo" value="<%= details.codigo %>">
+            </div>
+            <div class="column-3 column label">
+              <label for="txtLogon">Nome</label>
+            </div>
+            <div class="column-9 column input">
+              <input class="form-control" type="text" placeholder="Nome" name="nome" value="<%= details.nome %>">
+            </div>
+            <div class="column-3 column label">
+              <label for="txtLogon">Valor</label>
+            </div>
+            <div class="column-9 column input">
+            <input class="form-control" type="text" placeholder="Valor" name="valor" value="<%= details.valor %>">
+            </div>
+            <a class="btn btn-secondary mt-1" href="/reserva/show">Voltar</a>
+            <button class="btn btn-success float-right mt-1" type="submit">Editar</button>
+          </form>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

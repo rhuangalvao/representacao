@@ -159,6 +159,122 @@ app.route('/argacel/delete/:id')
   })
 })
 
+//Rotas do CRUD FIOCAB ----------------------------------------------------------
+//CREATE
+app.get('/fiocab/create', (req, res) => {
+    res.render('fiocab/create.ejs')
+})
+//SHOW
+app.get('/fiocab/show', (req, res) => {
+    db.collection('fiocab').find().toArray((err, results) => {
+        if (err) return console.log(err)
+        res.render('fiocab/show.ejs', { data: results })
+    })
+})
+app.post('/fiocab/show', (req, res) => {
+    db.collection('fiocab').save(req.body, (err, result) => {
+        if (err) return console.log(err)
+        console.log('Salvo no Banco de Dados')
+        res.redirect('/fiocab/show')
+    })
+})
+//EDIT
+app.route('/fiocab/edit/:id')
+.get((req, res)=>{
+  var id = req.params.id
+  db.collection('fiocab').find(ObjectId(id)).toArray((err, result) => {
+    if (err) return res.send(err)
+    res.render('fiocab/edit.ejs', {data: result})
+  })
+})
+.post((req, res) =>{
+  var id = req.params.id
+  var codigo = req.body.codigo
+  var nome = req.body.nome
+  var valor = req.body.valor
+
+  db.collection('fiocab').updateOne({_id: ObjectId(id)}, {
+    $set: {
+      codigo: codigo,
+      nome: nome,
+      valor: valor
+    }
+  },(err, result)=>{
+    if(err) return res.send(err)
+    res.redirect('/fiocab/show')
+    console.log("Atualizado no banco de dados");
+  })
+
+})
+//DELETE
+app.route('/fiocab/delete/:id')
+.get((req, res) =>{
+  var id = req.params.id
+  db.collection('fiocab').deleteOne({_id: ObjectId(id)}, (err, result) => {
+    if(err) return res.send(500, err)
+    console.log('Deletado do Banco de dados');
+    res.redirect('/fiocab/show')
+  })
+})
+
+//Rotas do CRUD RESERVA FERRAMENTAS ----------------------------------------------------------
+//CREATE
+app.get('/reserva/create', (req, res) => {
+    res.render('reserva/create.ejs')
+})
+//SHOW
+app.get('/reserva/show', (req, res) => {
+    db.collection('reserva').find().toArray((err, results) => {
+        if (err) return console.log(err)
+        res.render('reserva/show.ejs', { data: results })
+    })
+})
+app.post('/reserva/show', (req, res) => {
+    db.collection('reserva').save(req.body, (err, result) => {
+        if (err) return console.log(err)
+        console.log('Salvo no Banco de Dados')
+        res.redirect('/reserva/show')
+    })
+})
+//EDIT
+app.route('/reserva/edit/:id')
+.get((req, res)=>{
+  var id = req.params.id
+  db.collection('reserva').find(ObjectId(id)).toArray((err, result) => {
+    if (err) return res.send(err)
+    res.render('reserva/edit.ejs', {data: result})
+  })
+})
+.post((req, res) =>{
+  var id = req.params.id
+  var codigo = req.body.codigo
+  var nome = req.body.nome
+  var valor = req.body.valor
+
+  db.collection('reserva').updateOne({_id: ObjectId(id)}, {
+    $set: {
+      codigo: codigo,
+      nome: nome,
+      valor: valor
+    }
+  },(err, result)=>{
+    if(err) return res.send(err)
+    res.redirect('/reserva/show')
+    console.log("Atualizado no banco de dados");
+  })
+
+})
+//DELETE
+app.route('/reserva/delete/:id')
+.get((req, res) =>{
+  var id = req.params.id
+  db.collection('reserva').deleteOne({_id: ObjectId(id)}, (err, result) => {
+    if(err) return res.send(500, err)
+    console.log('Deletado do Banco de dados');
+    res.redirect('/reserva/show')
+  })
+})
+
 //Rotas do CRUD VALOR PORTA ----------------------------------------------------------
 //CREATE
 app.get('/portas/valor/create', (req, res) => {
@@ -384,6 +500,10 @@ app.post('/pedido/salvarempresa', (req, res) => {
     res.redirect('/pedido/create/adicionarProdutoSalete/'+pedido)
   }else if (req.body.representada == "Argamassas Argacel") {
     res.redirect('/pedido/create/adicionarProdutoArgacel/'+pedido)
+  }else if (req.body.representada == "FIOCAB") {
+    res.redirect('/pedido/create/adicionarProdutoFiocab/'+pedido)
+  }else if (req.body.representada == "Reserva Ferramentas") {
+    res.redirect('/pedido/create/adicionarProdutoReserva/'+pedido)
   }
 });
 
@@ -401,7 +521,21 @@ app.get('/pedido/create/adicionarProdutoArgacel/:id', (req, res) => {
   var pedido_id = req.params.id
   db.collection('argacel').find().toArray((err, results1) => {
       if (err) return console.log(err)
-        res.render('pedido/addProdutoArgacel.ejs', { data1: results1, pedido_id: pedido_id })
+        res.render('pedido/addProduto.ejs', { data1: results1, pedido_id: pedido_id })
+  })
+})
+app.get('/pedido/create/adicionarProdutoFiocab/:id', (req, res) => {
+  var pedido_id = req.params.id
+  db.collection('fiocab').find().toArray((err, results1) => {
+      if (err) return console.log(err)
+        res.render('pedido/addProduto.ejs', { data1: results1, pedido_id: pedido_id })
+  })
+})
+app.get('/pedido/create/adicionarProdutoReserva/:id', (req, res) => {
+  var pedido_id = req.params.id
+  db.collection('reserva').find().toArray((err, results1) => {
+      if (err) return console.log(err)
+        res.render('pedido/addProduto.ejs', { data1: results1, pedido_id: pedido_id })
   })
 })
 
@@ -415,6 +549,10 @@ app.post('/pedido/salvarproduto', (req, res) => {
         res.redirect('/pedido/create/adicionarProdutoSalete/'+pedido)
       }else if(result1[0].representada == "Argamassas Argacel"){
         res.redirect('/pedido/create/adicionarProdutoArgacel/'+pedido)
+      }else if (result1[0].representada == "FIOCAB") {
+        res.redirect('/pedido/create/adicionarProdutoFiocab/'+pedido)
+      }else if (result1[0].representada == "Reserva Ferramentas") {
+        res.redirect('/pedido/create/adicionarProdutoReserva/'+pedido)
       }
     })
   })
@@ -449,15 +587,27 @@ app.get('/pedido/mostrarLista/:id', (req, res) => {
                     })
                     produto.valor = (produto.quantidade * porta.valor * 1).toFixed(2)
                   }else if (produto.tamanho == "90") {
-                    db.collection('produto').updateOne({_id: ObjectId(produto._id)}, {
-                      $set: {
-                        nome: porta.nome,
-                        total: (produto.quantidade * porta.valor * 1.1).toFixed(2)
-                      }
-                    },(err, result)=>{
-                      if(err) return res.send(err)
-                    })
-                    produto.valor = (produto.quantidade * porta.valor * 1.1).toFixed(2)
+                    if (porta.nome.includes("ANGELIM")) {
+                      db.collection('produto').updateOne({_id: ObjectId(produto._id)}, {
+                        $set: {
+                          nome: porta.nome,
+                          total: (produto.quantidade * porta.valor * 1.2).toFixed(2)
+                        }
+                      },(err, result)=>{
+                        if(err) return res.send(err)
+                      })
+                      produto.valor = (produto.quantidade * porta.valor * 1.2).toFixed(2)
+                    }else {
+                      db.collection('produto').updateOne({_id: ObjectId(produto._id)}, {
+                        $set: {
+                          nome: porta.nome,
+                          total: (produto.quantidade * porta.valor * 1.1).toFixed(2)
+                        }
+                      },(err, result)=>{
+                        if(err) return res.send(err)
+                      })
+                      produto.valor = (produto.quantidade * porta.valor * 1.1).toFixed(2)
+                    }
                   }else if (produto.tamanho == "100") {
                     db.collection('produto').updateOne({_id: ObjectId(produto._id)}, {
                       $set: {
@@ -488,7 +638,7 @@ app.get('/pedido/mostrarLista/:id', (req, res) => {
               pedido_valor_total = pedido_valor_total + parseFloat(produto.valor)
             })
             result1.valor_total = pedido_valor_total.toFixed(2)
-            var numero =  parseInt(result1.valor_total);
+            var numero =  parseFloat(result1.valor_total);
             var dinheiro = numero.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
             var total = dinheiro.slice(3, dinheiro.lenght);
             db.collection('pedido').updateOne({_id: ObjectId(id)}, {
@@ -526,7 +676,81 @@ app.get('/pedido/mostrarLista/:id', (req, res) => {
               pedido_valor_total = pedido_valor_total + parseFloat(produto.valor)
             })
             result1.valor_total = pedido_valor_total.toFixed(2)
-            var numero =  parseInt(result1.valor_total);
+            var numero =  parseFloat(result1.valor_total);
+            var dinheiro = numero.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
+            var total = dinheiro.slice(3, dinheiro.lenght);
+            db.collection('pedido').updateOne({_id: ObjectId(id)}, {
+              $set: {
+                valor_total: total
+              }
+            },(err, result)=>{
+              if(err) return res.send(err)
+            })
+            db.collection('prazo').find().toArray((err, prazo) => {
+              res.render('pedido/show.ejs', { pedido: result1, produto: result2, empresa: result3, prazo: prazo})
+            })
+          })
+
+          //SE FOR FIOCAB
+        }else if (result1[0].representada == "FIOCAB") {
+          db.collection('fiocab').find().toArray((err, argamassas) => {
+            if (err) return res.send(err)
+            result2.forEach(function(produto){
+              argamassas.forEach(function(argamassa){
+                if(produto.codigo == argamassa.codigo){
+                  db.collection('produto').updateOne({_id: ObjectId(produto._id)}, {
+                    $set: {
+                      nome: argamassa.nome,
+                      total: (produto.quantidade * parseFloat(argamassa.valor.replace(",", "."))).toFixed(2)
+                    }
+                  },(err, result)=>{
+                    if(err) return res.send(err)
+                  })
+                  produto.valor = (produto.quantidade * parseFloat(argamassa.valor.replace(",", "."))).toFixed(2)
+                }
+              })
+            })
+            result2.forEach(function(produto){
+              pedido_valor_total = pedido_valor_total + parseFloat(produto.valor)
+            })
+            result1.valor_total = pedido_valor_total.toFixed(2)
+            var numero =  parseFloat(result1.valor_total);
+            var dinheiro = numero.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
+            var total = dinheiro.slice(3, dinheiro.lenght);
+            db.collection('pedido').updateOne({_id: ObjectId(id)}, {
+              $set: {
+                valor_total: total
+              }
+            },(err, result)=>{
+              if(err) return res.send(err)
+            })
+            db.collection('prazo').find().toArray((err, prazo) => {
+              res.render('pedido/show.ejs', { pedido: result1, produto: result2, empresa: result3, prazo: prazo})
+            })
+          })
+        }else if (result1[0].representada == "Reserva Ferramentas") {
+          db.collection('reserva').find().toArray((err, argamassas) => {
+            if (err) return res.send(err)
+            result2.forEach(function(produto){
+              argamassas.forEach(function(argamassa){
+                if(produto.codigo == argamassa.codigo){
+                  db.collection('produto').updateOne({_id: ObjectId(produto._id)}, {
+                    $set: {
+                      nome: argamassa.nome,
+                      total: (produto.quantidade * parseFloat(argamassa.valor.replace(",", "."))).toFixed(2)
+                    }
+                  },(err, result)=>{
+                    if(err) return res.send(err)
+                  })
+                  produto.valor = (produto.quantidade * parseFloat(argamassa.valor.replace(",", "."))).toFixed(2)
+                }
+              })
+            })
+            result2.forEach(function(produto){
+              pedido_valor_total = pedido_valor_total + parseFloat(produto.valor)
+            })
+            result1.valor_total = pedido_valor_total.toFixed(2)
+            var numero =  parseFloat(result1.valor_total);
             var dinheiro = numero.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
             var total = dinheiro.slice(3, dinheiro.lenght);
             db.collection('pedido').updateOne({_id: ObjectId(id)}, {
@@ -593,7 +817,36 @@ app.route('/produto/editProdutoArgacel/:id')
     pedido_id_edit = result[0].pedido_id
     db.collection('argacel').find().toArray((err, results1) => {
         if (err) return console.log(err)
-        res.render('pedido/editProdutoArgacel.ejs', {data: result ,data1: results1 })
+        res.render('pedido/editProduto.ejs', {data: result ,data1: results1 })
+    })
+  })
+})
+.post((req, res) =>{
+  var id = req.params.id
+  var quantidade = req.body.quantidade
+  var codigo = req.body.codigo
+
+  db.collection('produto').updateOne({_id: ObjectId(id)}, {
+    $set: {
+      quantidade: quantidade,
+      codigo: codigo,
+    }
+  },(err, result)=>{
+    if(err) return res.send(err)
+    res.redirect('/pedido/mostrarLista/'+pedido_id_edit)
+    })
+    console.log("Atualizado no banco de dados");
+})
+
+app.route('/produto/editProdutoFiocab/:id')
+.get((req, res)=>{
+  var id = req.params.id
+  db.collection('produto').find(ObjectId(id)).toArray((err, result) => {
+    if (err) return res.send(err)
+    pedido_id_edit = result[0].pedido_id
+    db.collection('fiocab').find().toArray((err, results1) => {
+        if (err) return console.log(err)
+        res.render('pedido/editProduto.ejs', {data: result ,data1: results1 })
     })
   })
 })
@@ -613,6 +866,37 @@ app.route('/produto/editProdutoArgacel/:id')
     })
     console.log("Atualizado no banco de dados");
   })
+
+app.route('/produto/editProdutoReserva/:id')
+.get((req, res)=>{
+  var id = req.params.id
+  db.collection('produto').find(ObjectId(id)).toArray((err, result) => {
+    if (err) return res.send(err)
+    pedido_id_edit = result[0].pedido_id
+    db.collection('reserva').find().toArray((err, results1) => {
+        if (err) return console.log(err)
+        res.render('pedido/editProduto.ejs', {data: result ,data1: results1 })
+    })
+  })
+})
+.post((req, res) =>{
+  var id = req.params.id
+  var quantidade = req.body.quantidade
+  var codigo = req.body.codigo
+
+  db.collection('produto').updateOne({_id: ObjectId(id)}, {
+    $set: {
+      quantidade: quantidade,
+      codigo: codigo,
+    }
+  },(err, result)=>{
+    if(err) return res.send(err)
+    res.redirect('/pedido/mostrarLista/'+pedido_id_edit)
+    })
+    console.log("Atualizado no banco de dados");
+  })
+
+
 
 function deleteLocalFile (nomeDoPedido){
   fs.unlink(nomeDoPedido, function (err){
@@ -660,6 +944,36 @@ app.post('/pedido/gerarPlanilha', (req, res) => {
               evenHeader: '&24&PEDIDO PORTAS SALETE&24',
               firstHeader: '&24PEDIDO PORTAS SALETE&24',
               oddHeader: '&24PEDIDO PORTAS SALETE&24',
+            },
+            margins: {
+              left: 0.3,
+              right: 0.3,
+            },
+            printOptions: {
+              centerHorizontal: true,
+            },
+          };
+        }else if(result1[0].representada == "FIOCAB"){
+          var options = {
+            headerFooter: {
+              evenHeader: '&24&PEDIDO FIOCAB&24',
+              firstHeader: '&24PEDIDO FIOCAB&24',
+              oddHeader: '&24PEDIDO FIOCAB&24',
+            },
+            margins: {
+              left: 0.3,
+              right: 0.3,
+            },
+            printOptions: {
+              centerHorizontal: true,
+            },
+          };
+        }else if(result1[0].representada == "Reserva Ferramentas"){
+          var options = {
+            headerFooter: {
+              evenHeader: '&24&PEDIDO RESERVA FERRAMENTAS&24',
+              firstHeader: '&24PEDIDO RESERVA FERRAMENTAS&24',
+              oddHeader: '&24PEDIDO RESERVA FERRAMENTAS&24',
             },
             margins: {
               left: 0.3,
@@ -787,7 +1101,7 @@ app.post('/pedido/gerarPlanilha', (req, res) => {
 
         ws.cell(1, 1, linhaIndex, 4).style(borda);
 
-        var numero =  parseInt(result1.valor_total);
+        var numero =  parseFloat(result1.valor_total);
         var dinheiro = numero.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
         var total = dinheiro.slice(3, dinheiro.lenght);
         const nomeDoPedido = "Pedido " + result3[0].nomefantasia + " " + reformatDate(result1[0].data) + " " + total + ".xlsx";
@@ -798,6 +1112,10 @@ app.post('/pedido/gerarPlanilha', (req, res) => {
           myTimeout = setTimeout(uploadFileArgacel, 3000, nomeDoPedido);
         }else if(result1[0].representada == "Portas Salete"){
           myTimeout = setTimeout(uploadFileSalete, 3000, nomeDoPedido);
+        }else if(result1[0].representada == "FIOCAB"){
+          myTimeout = setTimeout(uploadFileFiocab, 3000, nomeDoPedido);
+        }else if(result1[0].representada == "Reserva Ferramentas"){
+          myTimeout = setTimeout(uploadFileReserva, 3000, nomeDoPedido);
         }
         db.collection('prazo').find().toArray((err, prazo) => {
           res.redirect('/pedido/mostrarLista/'+id)
@@ -821,7 +1139,28 @@ function uploadFileSalete (nomeDoPedido){
 }
 
 function uploadFileArgacel (nomeDoPedido){
-  const GOOGLE_API_FOLDER_ID = '1EViEqk_UvALkAu4d2o6MNbdlN0p8fi47'   //PEDIDOS SALETE
+  const GOOGLE_API_FOLDER_ID = '1EViEqk_UvALkAu4d2o6MNbdlN0p8fi47'   //PEDIDOS ARGACEL
+  gdrive.imageUpload(
+    nomeDoPedido,
+    "./" + nomeDoPedido,
+    GOOGLE_API_FOLDER_ID, (id) => {
+      console.log(id);
+  });
+  setTimeout(deleteLocalFile, 3000, nomeDoPedido);
+}
+
+function uploadFileFiocab (nomeDoPedido){
+  const GOOGLE_API_FOLDER_ID = '19cJAyQT4WiRQT60XcRLHePMPLDQYzaUz'   //PEDIDOS FIOCAB
+  gdrive.imageUpload(
+    nomeDoPedido,
+    "./" + nomeDoPedido,
+    GOOGLE_API_FOLDER_ID, (id) => {
+      console.log(id);
+  });
+  setTimeout(deleteLocalFile, 3000, nomeDoPedido);
+}
+function uploadFileReserva (nomeDoPedido){
+  const GOOGLE_API_FOLDER_ID = '18-MJWo22dyKqvKMAuN8XgCEmvq_nQBc6'   //PEDIDOS RESERVA
   gdrive.imageUpload(
     nomeDoPedido,
     "./" + nomeDoPedido,

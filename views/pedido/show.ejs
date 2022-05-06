@@ -80,12 +80,13 @@
     </table>
 
     <!-- SE FOR ARGACEL -->
-  <% }else if(pedido[0].representada == "Argamassas Argacel"){ %>
+  <% }else { %>
     <table class="table table-sm table-bordered table-striped table-hover">
       <thead>
         <tr>
           <th scope="col">Quantidade</th>
           <th scope="col">Código</th>
+          <th scope="col">Nome</th>
           <th scope="col">SubTotal</th>
           <th scope="col">Ações</th>
         </tr>
@@ -94,9 +95,16 @@
         <% produto.forEach(function(details) { %>
             <tr>
                 <td><%= details.quantidade %></td>
-                <td><%= details.codigo %> <%= details.nome %></td>
+                <td><%= details.codigo %></td>
+                <td><%= details.nome %></td>
                 <td><%= details.valor.replace(".", ",") %></td>
+                <% if(pedido[0].representada == "Argamassas Argacel"){ %>
                 <td><a href="/produto/editProdutoArgacel/<%= details._id %>">Editar</a> - <a href="/produto/delete/<%= details._id %>">Deletar</a></td>
+                <% }else if(pedido[0].representada == "FIOCAB"){ %>
+                <td><a href="/produto/editProdutoFiocab/<%= details._id %>">Editar</a> - <a href="/produto/delete/<%= details._id %>">Deletar</a></td>
+                <% }else if(pedido[0].representada == "Reserva Ferramentas"){ %>
+                <td><a href="/produto/editProdutoReserva/<%= details._id %>">Editar</a> - <a href="/produto/delete/<%= details._id %>">Deletar</a></td>
+                <% } %>
             </tr>
         <% }) %>
       </tbody>
@@ -111,6 +119,10 @@
         <a class="btn btn-primary " href="/pedido/create/adicionarProdutoSalete/<%= pedido[0]._id %>">Adicionar Produto</a>
       <% }else if(pedido[0].representada == "Argamassas Argacel"){ %>
         <a class="btn btn-primary " href="/pedido/create/adicionarProdutoArgacel/<%= pedido[0]._id %>">Adicionar Produto</a>
+      <% }else if(pedido[0].representada == "FIOCAB"){ %>
+        <a class="btn btn-primary " href="/pedido/create/adicionarProdutoFiocab/<%= pedido[0]._id %>">Adicionar Produto</a>
+      <% }else if(pedido[0].representada == "Reserva Ferramentas"){ %>
+        <a class="btn btn-primary " href="/pedido/create/adicionarProdutoReserva/<%= pedido[0]._id %>">Adicionar Produto</a>
       <% } %>
     </div>
     <div class="col-sm">
