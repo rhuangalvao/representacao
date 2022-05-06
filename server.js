@@ -437,21 +437,46 @@ app.get('/pedido/mostrarLista/:id', (req, res) => {
             result2.forEach(function(produto){
               portas.forEach(function(porta){
                 if(produto.codigo == porta.codigo){
-                  db.collection('produto').updateOne({_id: ObjectId(produto._id)}, {
-                    $set: {
-                      nome: porta.nome
-                    }
-                  },(err, result)=>{
-                    if(err) return res.send(err)
-                    console.log("Atualizado no banco de dados");
-                  })
+
                   if(produto.tamanho == "60" || produto.tamanho == "70" || produto.tamanho == "80"){
+                    db.collection('produto').updateOne({_id: ObjectId(produto._id)}, {
+                      $set: {
+                        nome: porta.nome,
+                        total: (produto.quantidade * porta.valor * 1).toFixed(2)
+                      }
+                    },(err, result)=>{
+                      if(err) return res.send(err)
+                    })
                     produto.valor = (produto.quantidade * porta.valor * 1).toFixed(2)
                   }else if (produto.tamanho == "90") {
+                    db.collection('produto').updateOne({_id: ObjectId(produto._id)}, {
+                      $set: {
+                        nome: porta.nome,
+                        total: (produto.quantidade * porta.valor * 1.1).toFixed(2)
+                      }
+                    },(err, result)=>{
+                      if(err) return res.send(err)
+                    })
                     produto.valor = (produto.quantidade * porta.valor * 1.1).toFixed(2)
                   }else if (produto.tamanho == "100") {
+                    db.collection('produto').updateOne({_id: ObjectId(produto._id)}, {
+                      $set: {
+                        nome: porta.nome,
+                        total: (produto.quantidade * porta.valor * 1.6).toFixed(2)
+                      }
+                    },(err, result)=>{
+                      if(err) return res.send(err)
+                    })
                     produto.valor = (produto.quantidade * porta.valor * 1.6).toFixed(2)
                   }else if (produto.tamanho == "110") {
+                    db.collection('produto').updateOne({_id: ObjectId(produto._id)}, {
+                      $set: {
+                        nome: porta.nome,
+                        total: (produto.quantidade * porta.valor * 1.7).toFixed(2)
+                      }
+                    },(err, result)=>{
+                      if(err) return res.send(err)
+                    })
                     produto.valor = (produto.quantidade * porta.valor * 1.7).toFixed(2)
                   }else {
                     console.log("Não deu valor");
@@ -487,11 +512,11 @@ app.get('/pedido/mostrarLista/:id', (req, res) => {
                 if(produto.codigo == argamassa.codigo){
                   db.collection('produto').updateOne({_id: ObjectId(produto._id)}, {
                     $set: {
-                      nome: argamassa.nome
+                      nome: argamassa.nome,
+                      total: (produto.quantidade * parseFloat(argamassa.valor.replace(",", "."))).toFixed(2)
                     }
                   },(err, result)=>{
                     if(err) return res.send(err)
-                    console.log("Atualizado no banco de dados");
                   })
                   produto.valor = (produto.quantidade * parseFloat(argamassa.valor.replace(",", "."))).toFixed(2)
                 }
@@ -522,185 +547,6 @@ app.get('/pedido/mostrarLista/:id', (req, res) => {
     })
   })
 });
-
-app.post('/pedido/gerarPlanilhaSalete', (req, res) => {
-  var id = req.body.pedido_id
-  db.collection('pedido').find(ObjectId(id)).toArray((err, result1) => {
-    if (err) return res.send(err)
-    var razaosocial_id = result1[0].razaosocial_id
-    db.collection('produto').find({pedido_id: id}).toArray((err, result2) => {
-      if (err) return res.send(err)
-      db.collection('empresa').find({_id: ObjectId(razaosocial_id)}).toArray((err, result3) => {
-        if (err) return res.send(err)
-        db.collection('portas').find().toArray((err, portas) => {
-          if (err) return res.send(err)
-          result2.forEach(function(produto){
-            portas.forEach(function(porta){
-              if(produto.codigo == porta.codigo){
-                produto.nome = porta.nome;
-                if(produto.tamanho == "60" || produto.tamanho == "70" || produto.tamanho == "80"){
-                  produto.valor = (produto.quantidade * porta.valor * 1).toFixed(2)
-                }else if (produto.tamanho == "90") {
-                  produto.valor = (produto.quantidade * porta.valor * 1.1).toFixed(2)
-                }else if (produto.tamanho == "100") {
-                  produto.valor = (produto.quantidade * porta.valor * 1.6).toFixed(2)
-                }else if (produto.tamanho == "110") {
-                  produto.valor = (produto.quantidade * porta.valor * 1.7).toFixed(2)
-                }else {
-                  console.log("Não deu valor");
-                }
-              }
-            })
-          })
-          pedido_valor_total = 0
-          result2.forEach(function(produto){
-            pedido_valor_total = pedido_valor_total + parseFloat(produto.valor)
-          })
-          result1.valor_total = pedido_valor_total.toFixed(2)
-
-          // CRIAR A PLANILHA
-          const wb = new xl.Workbook();
-
-          var options = {
-            headerFooter: {
-              evenHeader: '&24&PEDIDO PORTAS SALETE&24',
-              firstHeader: '&24PEDIDO PORTAS SALETE&24',
-              oddHeader: '&24PEDIDO PORTAS SALETE&24',
-            },
-            margins: {
-              left: 0.3,
-              right: 0.3,
-            },
-            printOptions: {
-              centerHorizontal: true,
-            },
-          };
-          const ws = wb.addWorksheet('Worksheet Name', options);
-
-          var colunaData = wb.createStyle({
-            alignment: {
-              horizontal: 'right',
-            },
-          });
-          var centralizado = wb.createStyle({
-            alignment: {
-              horizontal: 'center',
-            },
-          });
-          var valor = wb.createStyle({
-            numberFormat: '#,##0.00; (#,##.00); -',
-            font: {
-              bold: true,
-            },
-          });
-          var negrito = wb.createStyle({
-            font: {
-              bold: true,
-            },
-          });
-          const borda = wb.createStyle({
-          	border: {
-          		left: {
-          			style: 'thin',
-          			color: 'black',
-          		},
-          		right: {
-          			style: 'thin',
-          			color: 'black',
-          		},
-          		top: {
-          			style: 'thin',
-          			color: 'black',
-          		},
-          		bottom: {
-          			style: 'thin',
-          			color: 'black',
-          		},
-          		outline: false,
-          	},
-          });
-
-          ws.column(2).setWidth(15);
-          ws.column(2).setWidth(52);
-          ws.column(3).setWidth(12);
-          ws.column(4).setWidth(12);
-
-          ws.cell(1, 1).string(result3[0].razaosocial);
-          ws.cell(2, 1).string(result3[0].endereco + ", " + result3[0].numero + " - "+result3[0].bairro + " - "+result3[0].cidade + "- PR");
-          ws.cell(3, 1).string(result3[0].cnpj + " " + result3[0].ie);
-          ws.cell(4, 1).string("EMAIL");
-          ws.cell(4, 2).string(result3[0].email);
-          ws.cell(1, 4).date(result1[0].data).style({numberFormat: 'dd/mm/yyyy'}).style(colunaData);
-          ws.cell(2, 4).string(result3[0].cep).style(colunaData);
-          ws.cell(3, 4).string(result3[0].telefone).style(colunaData);
-          ws.cell(4, 4).string(result3[0].comprador).style(colunaData);
-          ws.cell(5, 2).string(req.body.prazo + "  " + req.body.formadepagamento);
-          ws.cell(6, 1).string("Quantidade");
-          ws.cell(6, 2).string("Descrição").style(centralizado);
-          ws.cell(6, 3).string("Unitário").style(centralizado);;
-          ws.cell(6, 4).string("Total").style(centralizado);;
-
-          let linhaIndex = 7;
-          result2.forEach(function(produto){
-            ws.cell(linhaIndex, 1).number(parseFloat(produto.quantidade)).style(centralizado);
-            if(produto.codigo.includes("M") || produto.codigo.includes("V")){
-              ws.cell(linhaIndex, 2).string(produto.nome);
-            }else {
-              ws.cell(linhaIndex, 2).string("PORTA " + produto.codigo + " " + produto.tamanho + " CM " + produto.nome );
-            }
-            ws.cell(linhaIndex, 3).number(produto.valor/parseFloat(produto.quantidade)).style(valor);
-            ws.cell(linhaIndex, 4).formula('A'+linhaIndex + ' * C'+linhaIndex).style(valor);
-            linhaIndex++;
-          })
-          ws.cell(linhaIndex, 4).formula('SUM(D7:D'+ --linhaIndex + ')').style(valor);
-
-          linhaIndex = linhaIndex +3;
-
-          ws.cell(linhaIndex++, 2).string("MANDAR :").style(negrito);
-          ws.cell(linhaIndex++, 2).string("COM MARCA E REFERÊNCIA NA PORTA.").style(negrito);
-          ws.cell(linhaIndex++, 2).string("CAPRICHAR NA QUALIDADE.").style(negrito);
-          ws.cell(linhaIndex++, 2).string("MANDAR A NF CONFORME ESCRITO NO PEDIDO.").style(negrito);
-          ws.cell(linhaIndex++, 2).string("MANDAR BOLETO JUNTO COM A NF.").style(negrito);
-          ws.cell(linhaIndex++, 2).string("FURADAS, AS QUE NÃO TEM LADO").style(negrito);
-          linhaIndex++;
-
-          ws.cell(linhaIndex++, 2).string("GALVÃO").style(negrito);
-          ws.cell(linhaIndex++, 2).string("42-99827-8677").style(negrito);
-          ws.cell(linhaIndex++, 2).string("galvaoluiz3@gmail.com");
-
-          ws.cell(1, 1, linhaIndex, 4).style(borda);
-
-          // const destino = 'G:/.shortcut-targets-by-id/id/Galvão Repr/Salete Portas externas/A Pedidos/'
-          // const destino = 'C:/Users/huanl/Documents/Projetos/'
-          var numero =  parseInt(result1.valor_total);
-          var dinheiro = numero.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
-          var total = dinheiro.slice(3, dinheiro.lenght);
-          const nomeDoPedido = "Pedido " + result3[0].nomefantasia + " " + reformatDate(result1[0].data) + " " + total + ".xlsx";
-          wb.write(nomeDoPedido);
-          console.log('Arquivo local criado!');
-          myTimeout = setTimeout(uploadFileSalete, 3000, nomeDoPedido);
-
-          db.collection('prazo').find().toArray((err, prazo) => {
-            res.redirect('/pedido/mostrarLista/'+id)
-          })
-        })
-      })
-    })
-  })
-});
-
-function uploadFileSalete (nomeDoPedido){
-  const GOOGLE_API_FOLDER_ID = '1-bD4Zi3QrT7WQWuksphPCCvGPKh2HGv6'   //PEDIDOS SALETE
-  gdrive.imageUpload(
-    nomeDoPedido,
-    "./" + nomeDoPedido,
-    GOOGLE_API_FOLDER_ID, (id) => {
-      console.log(id);
-      // open('https://drive.google.com/uc?export=view&id=' + id);
-  });
-  //https://drive.google.com/uc?export=view&id=
-  setTimeout(deleteLocalFile, 3000, nomeDoPedido);
-}
 
 //EDIT
 app.route('/produto/editProdutoSalete/:id')
@@ -737,168 +583,7 @@ app.route('/produto/editProdutoSalete/:id')
     console.log("Atualizado no banco de dados");
   })
 
-function deleteLocalFile (nomeDoPedido){
-  fs.unlink(nomeDoPedido, function (err){
-    if (err) throw err;
-    console.log('Arquivo local deletado!');
-  })
-}
-
-app.post('/pedido/gerarPlanilhaArgacel', (req, res) => {
-  var id = req.body.pedido_id
-  db.collection('pedido').find(ObjectId(id)).toArray((err, result1) => {
-    if (err) return res.send(err)
-    var razaosocial_id = result1[0].razaosocial_id
-    db.collection('produto').find({pedido_id: id}).toArray((err, result2) => {
-      if (err) return res.send(err)
-      db.collection('empresa').find({_id: ObjectId(razaosocial_id)}).toArray((err, result3) => {
-        if (err) return res.send(err)
-        db.collection('argacel').find().toArray((err, argamassas) => {
-          if (err) return res.send(err)
-          result2.forEach(function(produto){
-            argamassas.forEach(function(argamassa){
-              if(produto.codigo == argamassa.codigo){
-                produto.nome = argamassa.nome
-                produto.valor = (produto.quantidade * parseFloat(argamassa.valor.replace(",", "."))).toFixed(2)
-              }
-            })
-          })
-          pedido_valor_total = 0
-          result2.forEach(function(produto){
-            pedido_valor_total = pedido_valor_total + parseFloat(produto.valor)
-          })
-          result1.valor_total = pedido_valor_total.toFixed(2)
-
-          // CRIAR A PLANILHA
-          const wb = new xl.Workbook();
-
-          var options = {
-            headerFooter: {
-              evenHeader: '&24&PEDIDO ARGAMASSAS ARGACEL&24',
-              firstHeader: '&24PEDIDO ARGAMASSAS ARGACEL&24',
-              oddHeader: '&24PEDIDO ARGAMASSAS ARGACEL&24',
-            },
-          };
-          const ws = wb.addWorksheet('Worksheet Name', options);
-
-          var colunaData = wb.createStyle({
-            alignment: {
-              horizontal: 'right',
-            },
-          });
-          var centralizado = wb.createStyle({
-            alignment: {
-              horizontal: 'center',
-            },
-          });
-          var valor = wb.createStyle({
-            numberFormat: '#,##0.00; (#,##.00); -',
-            font: {
-              bold: true,
-            },
-          });
-          var negrito = wb.createStyle({
-            font: {
-              bold: true,
-            },
-          });
-          const borda = wb.createStyle({
-          	border: {
-          		left: {
-          			style: 'thin',
-          			color: 'black',
-          		},
-          		right: {
-          			style: 'thin',
-          			color: 'black',
-          		},
-          		top: {
-          			style: 'thin',
-          			color: 'black',
-          		},
-          		bottom: {
-          			style: 'thin',
-          			color: 'black',
-          		},
-          		outline: false,
-          	},
-          });
-
-          ws.column(2).setWidth(15);
-          ws.column(2).setWidth(45);
-          ws.column(3).setWidth(12);
-          ws.column(4).setWidth(12);
-
-          ws.cell(1, 1).string(result3[0].razaosocial);
-          ws.cell(2, 1).string(result3[0].endereco + ", " + result3[0].numero + " - "+result3[0].bairro + " - "+result3[0].cidade + "- PR");
-          ws.cell(3, 1).string(result3[0].cnpj + " " + result3[0].ie);
-          ws.cell(4, 1).string("EMAIL");
-          ws.cell(4, 2).string(result3[0].email);
-          ws.cell(1, 4).date(result1[0].data).style({numberFormat: 'dd/mm/yyyy'}).style(colunaData);
-          ws.cell(2, 4).string(result3[0].cep).style(colunaData);
-          ws.cell(3, 4).string(result3[0].telefone).style(colunaData);
-          ws.cell(4, 4).string(result3[0].comprador).style(colunaData);
-          ws.cell(5, 2).string(req.body.prazo + "  " + req.body.formadepagamento);
-          ws.cell(6, 1).string("Quantidade");
-          ws.cell(6, 2).string("Descrição").style(centralizado);
-          ws.cell(6, 3).string("Unitário").style(centralizado);;
-          ws.cell(6, 4).string("Total").style(centralizado);;
-
-          let linhaIndex = 7;
-          result2.forEach(function(produto){
-            ws.cell(linhaIndex, 1).number(parseFloat(produto.quantidade)).style(centralizado);
-            ws.cell(linhaIndex, 2).string(produto.nome);
-            ws.cell(linhaIndex, 3).number(produto.valor/parseFloat(produto.quantidade)).style(valor);
-            ws.cell(linhaIndex, 4).formula('A'+linhaIndex + ' * C'+linhaIndex).style(valor);
-            linhaIndex++;
-          })
-          ws.cell(linhaIndex, 4).formula('SUM(D7:D'+ --linhaIndex + ')').style(valor);
-
-          linhaIndex = linhaIndex +3;
-
-          ws.cell(linhaIndex++, 2).string("GALVÃO").style(negrito);
-          ws.cell(linhaIndex++, 2).string("42-99827-8677").style(negrito);
-          ws.cell(linhaIndex++, 2).string("galvaoluiz3@gmail.com");
-
-          ws.cell(1, 1, linhaIndex, 4).style(borda);
-
-          var numero =  parseInt(result1.valor_total);
-          var dinheiro = numero.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
-          var total = dinheiro.slice(3, dinheiro.lenght);
-          const nomeDoPedido = "Pedido " + result3[0].nomefantasia + " " + reformatDate(result1[0].data) + " " + total + ".xlsx";
-          wb.write(nomeDoPedido);
-          console.log('Arquivo local criado!');
-          myTimeout = setTimeout(uploadFileArgacel, 3000, nomeDoPedido);
-
-          db.collection('prazo').find().toArray((err, prazo) => {
-            res.redirect('/pedido/mostrarLista/'+id)
-          })
-        })
-      })
-    })
-  })
-});
-
-function uploadFileArgacel (nomeDoPedido){
-  const GOOGLE_API_FOLDER_ID = '1EViEqk_UvALkAu4d2o6MNbdlN0p8fi47'   //PEDIDOS SALETE
-  gdrive.imageUpload(
-    nomeDoPedido,
-    "./" + nomeDoPedido,
-    GOOGLE_API_FOLDER_ID, (id) => {
-      console.log(id);
-      // open('https://drive.google.com/uc?export=view&id=' + id);
-  });
-  //https://drive.google.com/uc?export=view&id=
-  setTimeout(deleteLocalFile, 3000, nomeDoPedido);
-}
-
-function reformatDate(dateStr)
-{
-  dArr = dateStr.split("-");  // ex input "2010-01-18"
-  return dArr[2]+ " " +dArr[1]+ " " +dArr[0]; //ex out: "18/01/10"
-}
-
-var pedido_id_edit = ""
+  var pedido_id_edit = ""
 //EDIT
 app.route('/produto/editProdutoArgacel/:id')
 .get((req, res)=>{
@@ -928,6 +613,231 @@ app.route('/produto/editProdutoArgacel/:id')
     })
     console.log("Atualizado no banco de dados");
   })
+
+function deleteLocalFile (nomeDoPedido){
+  fs.unlink(nomeDoPedido, function (err){
+    if (err) throw err;
+    console.log('Arquivo local deletado!');
+  })
+}
+
+app.post('/pedido/gerarPlanilha', (req, res) => {
+  var id = req.body.pedido_id
+  db.collection('pedido').find(ObjectId(id)).toArray((err, result1) => {
+    if (err) return res.send(err)
+    var razaosocial_id = result1[0].razaosocial_id
+    db.collection('produto').find({pedido_id: id}).toArray((err, result2) => {
+      if (err) return res.send(err)
+      db.collection('empresa').find({_id: ObjectId(razaosocial_id)}).toArray((err, result3) => {
+        if (err) return res.send(err)
+        // CRIAR A PLANILHA
+        const wb = new xl.Workbook();
+
+        pedido_valor_total = 0
+        result2.forEach(function(produto){
+          pedido_valor_total = pedido_valor_total + parseFloat(produto.total)
+        })
+        result1.valor_total = pedido_valor_total.toFixed(2)
+
+        if (result1[0].representada == "Argamassas Argacel") {
+          var options = {
+            headerFooter: {
+              evenHeader: '&24&PEDIDO ARGAMASSAS ARGACEL&24',
+              firstHeader: '&24PEDIDO ARGAMASSAS ARGACEL&24',
+              oddHeader: '&24PEDIDO ARGAMASSAS ARGACEL&24',
+            },
+            margins: {
+              left: 0.3,
+              right: 0.3,
+            },
+            printOptions: {
+              centerHorizontal: true,
+            },
+          };
+        }else if(result1[0].representada == "Portas Salete"){
+          var options = {
+            headerFooter: {
+              evenHeader: '&24&PEDIDO PORTAS SALETE&24',
+              firstHeader: '&24PEDIDO PORTAS SALETE&24',
+              oddHeader: '&24PEDIDO PORTAS SALETE&24',
+            },
+            margins: {
+              left: 0.3,
+              right: 0.3,
+            },
+            printOptions: {
+              centerHorizontal: true,
+            },
+          };
+        }
+
+        const ws = wb.addWorksheet('Worksheet Name', options);
+
+        var colunaData = wb.createStyle({
+          alignment: {
+            horizontal: 'right',
+          },
+        });
+        var centralizado = wb.createStyle({
+          alignment: {
+            horizontal: 'center',
+          },
+        });
+        var valor = wb.createStyle({
+          numberFormat: '#,##0.00; (#,##.00); -',
+          font: {
+            bold: true,
+          },
+        });
+        var negrito = wb.createStyle({
+          font: {
+            bold: true,
+          },
+        });
+        const borda = wb.createStyle({
+        	border: {
+        		left: {
+        			style: 'thin',
+        			color: 'black',
+        		},
+        		right: {
+        			style: 'thin',
+        			color: 'black',
+        		},
+        		top: {
+        			style: 'thin',
+        			color: 'black',
+        		},
+        		bottom: {
+        			style: 'thin',
+        			color: 'black',
+        		},
+        		outline: false,
+        	},
+        });
+
+        ws.column(2).setWidth(15);
+        ws.column(2).setWidth(45);
+        ws.column(3).setWidth(12);
+        ws.column(4).setWidth(12);
+
+        ws.cell(1, 1).string(result3[0].razaosocial);
+        ws.cell(2, 1).string(result3[0].endereco + ", " + result3[0].numero + " - "+result3[0].bairro + " - "+result3[0].cidade + "- PR");
+        ws.cell(3, 1).string(result3[0].cnpj + " " + result3[0].ie);
+        ws.cell(4, 1).string("EMAIL");
+        ws.cell(4, 2).string(result3[0].email);
+        ws.cell(1, 4).date(result1[0].data).style({numberFormat: 'dd/mm/yyyy'}).style(colunaData);
+        ws.cell(2, 4).string(result3[0].cep).style(colunaData);
+        ws.cell(3, 4).string(result3[0].telefone).style(colunaData);
+        ws.cell(4, 4).string(result3[0].comprador).style(colunaData);
+        ws.cell(5, 2).string(req.body.prazo + "  " + req.body.formadepagamento);
+        ws.cell(6, 1).string("Quantidade");
+        ws.cell(6, 2).string("Descrição").style(centralizado);
+        ws.cell(6, 3).string("Unitário").style(centralizado);;
+        ws.cell(6, 4).string("Total").style(centralizado);;
+
+        let linhaIndex = 7;
+
+        if (result1[0].representada == "Portas Salete") {
+          result2.forEach(function(produto){
+            ws.cell(linhaIndex, 1).number(parseFloat(produto.quantidade)).style(centralizado);
+            if(produto.codigo.includes("M") || produto.codigo.includes("V")){
+              ws.cell(linhaIndex, 2).string(produto.nome);
+            }else {
+              ws.cell(linhaIndex, 2).string("PORTA " + produto.codigo + " " + produto.tamanho + " CM " + produto.nome );
+            }
+            ws.cell(linhaIndex, 3).number(parseFloat(produto.total)/parseFloat(produto.quantidade)).style(valor);
+            ws.cell(linhaIndex, 4).formula('A'+linhaIndex + ' * C'+linhaIndex).style(valor);
+            linhaIndex++;
+          })
+          ws.cell(linhaIndex, 4).formula('SUM(D7:D'+ --linhaIndex + ')').style(valor);
+        }else {
+          result2.forEach(function(produto){
+            ws.cell(linhaIndex, 1).number(parseFloat(produto.quantidade)).style(centralizado);
+            ws.cell(linhaIndex, 2).string(produto.nome);
+            ws.cell(linhaIndex, 3).number(parseFloat(produto.total)/parseFloat(produto.quantidade)).style(valor);
+            ws.cell(linhaIndex, 4).formula('A'+linhaIndex + ' * C'+linhaIndex).style(valor);
+            linhaIndex++;
+          })
+          ws.cell(linhaIndex, 4).formula('SUM(D7:D'+ --linhaIndex + ')').style(valor);
+        }
+
+        linhaIndex = linhaIndex +3;
+
+        if (result1[0].representada == "Portas Salete") {
+          ws.cell(linhaIndex++, 2).string("MANDAR :").style(negrito);
+          ws.cell(linhaIndex++, 2).string("COM MARCA E REFERÊNCIA NA PORTA.").style(negrito);
+          ws.cell(linhaIndex++, 2).string("CAPRICHAR NA QUALIDADE.").style(negrito);
+          ws.cell(linhaIndex++, 2).string("MANDAR A NF CONFORME ESCRITO NO PEDIDO.").style(negrito);
+          ws.cell(linhaIndex++, 2).string("MANDAR BOLETO JUNTO COM A NF.").style(negrito);
+          ws.cell(linhaIndex++, 2).string("FURADAS, AS QUE NÃO TEM LADO").style(negrito);
+        }
+
+        linhaIndex++;
+
+        if (result1[0].usuario == "GALVÃO") {
+          ws.cell(linhaIndex++, 2).string("GALVÃO").style(negrito);
+          ws.cell(linhaIndex++, 2).string("42-99827-8677").style(negrito);
+          ws.cell(linhaIndex++, 2).string("galvaoluiz3@gmail.com");
+        }else if(result1[0].usuario == "DEYSE"){
+          ws.cell(linhaIndex++, 2).string("DEYSE").style(negrito);
+          ws.cell(linhaIndex++, 2).string("42-99987-1298").style(negrito);
+          ws.cell(linhaIndex++, 2).string("deysekarine@hotmail.com");
+        }
+
+        ws.cell(1, 1, linhaIndex, 4).style(borda);
+
+        var numero =  parseInt(result1.valor_total);
+        var dinheiro = numero.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
+        var total = dinheiro.slice(3, dinheiro.lenght);
+        const nomeDoPedido = "Pedido " + result3[0].nomefantasia + " " + reformatDate(result1[0].data) + " " + total + ".xlsx";
+        wb.write(nomeDoPedido);
+        console.log('Arquivo local criado!');
+
+        if (result1[0].representada == "Argamassas Argacel") {
+          myTimeout = setTimeout(uploadFileArgacel, 3000, nomeDoPedido);
+        }else if(result1[0].representada == "Portas Salete"){
+          myTimeout = setTimeout(uploadFileSalete, 3000, nomeDoPedido);
+        }
+        db.collection('prazo').find().toArray((err, prazo) => {
+          res.redirect('/pedido/mostrarLista/'+id)
+        })
+      })
+    })
+  })
+});
+
+function uploadFileSalete (nomeDoPedido){
+  const GOOGLE_API_FOLDER_ID = '1-bD4Zi3QrT7WQWuksphPCCvGPKh2HGv6'   //PEDIDOS SALETE
+  gdrive.imageUpload(
+    nomeDoPedido,
+    "./" + nomeDoPedido,
+    GOOGLE_API_FOLDER_ID, (id) => {
+      console.log(id);
+      // open('https://drive.google.com/uc?export=view&id=' + id);
+  });
+  //https://drive.google.com/uc?export=view&id=
+  setTimeout(deleteLocalFile, 3000, nomeDoPedido);
+}
+
+function uploadFileArgacel (nomeDoPedido){
+  const GOOGLE_API_FOLDER_ID = '1EViEqk_UvALkAu4d2o6MNbdlN0p8fi47'   //PEDIDOS SALETE
+  gdrive.imageUpload(
+    nomeDoPedido,
+    "./" + nomeDoPedido,
+    GOOGLE_API_FOLDER_ID, (id) => {
+      console.log(id);
+  });
+  setTimeout(deleteLocalFile, 3000, nomeDoPedido);
+}
+
+function reformatDate(dateStr)
+{
+  dArr = dateStr.split("-");  // ex input "2010-01-18"
+  return dArr[2]+ " " +dArr[1]+ " " +dArr[0]; //ex out: "18/01/10"
+}
+
+
 
 //DELETE PRODUTO
 app.route('/produto/delete/:id')

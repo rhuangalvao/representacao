@@ -114,11 +114,7 @@
       <% } %>
     </div>
     <div class="col-sm">
-      <% if(pedido[0].representada == "Portas Salete"){ %>
-        <form action="/pedido/gerarPlanilhaSalete" method="POST">
-      <% }else if(pedido[0].representada == "Argamassas Argacel"){ %>
-        <form action="/pedido/gerarPlanilhaArgacel" method="POST">
-      <% } %>
+      <form action="/pedido/gerarPlanilha" method="POST">
           <label>Prazo</label>
           <select class="form-control" name="prazo" style="width: 250px">
             <% if(parseInt(pedido.valor_total) > 2000 ) { %>
