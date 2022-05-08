@@ -1109,13 +1109,13 @@ app.post('/pedido/gerarPlanilha', (req, res) => {
         console.log('Arquivo local criado!');
 
         if (result1[0].representada == "Argamassas Argacel") {
-          myTimeout = setTimeout(uploadFileArgacel, 3000, nomeDoPedido);
+          myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1EViEqk_UvALkAu4d2o6MNbdlN0p8fi47');
         }else if(result1[0].representada == "Portas Salete"){
-          myTimeout = setTimeout(uploadFileSalete, 3000, nomeDoPedido);
+          myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1-bD4Zi3QrT7WQWuksphPCCvGPKh2HGv6');
         }else if(result1[0].representada == "FIOCAB"){
-          myTimeout = setTimeout(uploadFileFiocab, 3000, nomeDoPedido);
+          myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '19cJAyQT4WiRQT60XcRLHePMPLDQYzaUz');
         }else if(result1[0].representada == "Reserva Ferramentas"){
-          myTimeout = setTimeout(uploadFileReserva, 3000, nomeDoPedido);
+          myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '18-MJWo22dyKqvKMAuN8XgCEmvq_nQBc6');
         }
         db.collection('prazo').find().toArray((err, prazo) => {
           res.redirect('/pedido/mostrarLista/'+id)
@@ -1125,46 +1125,11 @@ app.post('/pedido/gerarPlanilha', (req, res) => {
   })
 });
 
-function uploadFileSalete (nomeDoPedido){
-  const GOOGLE_API_FOLDER_ID = '1-bD4Zi3QrT7WQWuksphPCCvGPKh2HGv6'   //PEDIDOS SALETE
+function uploadFile(nomeDoPedido, localDrive){
   gdrive.imageUpload(
     nomeDoPedido,
     "./" + nomeDoPedido,
-    GOOGLE_API_FOLDER_ID, (id) => {
-      console.log(id);
-      // open('https://drive.google.com/uc?export=view&id=' + id);
-  });
-  //https://drive.google.com/uc?export=view&id=
-  setTimeout(deleteLocalFile, 3000, nomeDoPedido);
-}
-
-function uploadFileArgacel (nomeDoPedido){
-  const GOOGLE_API_FOLDER_ID = '1EViEqk_UvALkAu4d2o6MNbdlN0p8fi47'   //PEDIDOS ARGACEL
-  gdrive.imageUpload(
-    nomeDoPedido,
-    "./" + nomeDoPedido,
-    GOOGLE_API_FOLDER_ID, (id) => {
-      console.log(id);
-  });
-  setTimeout(deleteLocalFile, 3000, nomeDoPedido);
-}
-
-function uploadFileFiocab (nomeDoPedido){
-  const GOOGLE_API_FOLDER_ID = '19cJAyQT4WiRQT60XcRLHePMPLDQYzaUz'   //PEDIDOS FIOCAB
-  gdrive.imageUpload(
-    nomeDoPedido,
-    "./" + nomeDoPedido,
-    GOOGLE_API_FOLDER_ID, (id) => {
-      console.log(id);
-  });
-  setTimeout(deleteLocalFile, 3000, nomeDoPedido);
-}
-function uploadFileReserva (nomeDoPedido){
-  const GOOGLE_API_FOLDER_ID = '18-MJWo22dyKqvKMAuN8XgCEmvq_nQBc6'   //PEDIDOS RESERVA
-  gdrive.imageUpload(
-    nomeDoPedido,
-    "./" + nomeDoPedido,
-    GOOGLE_API_FOLDER_ID, (id) => {
+    localDrive, (id) => {
       console.log(id);
   });
   setTimeout(deleteLocalFile, 3000, nomeDoPedido);
