@@ -333,6 +333,64 @@ app.route('/sulflex/delete/:id')
   })
 })
 
+//Rotas do CRUD VASSOURAS ESPLANADA ----------------------------------------------------------
+//CREATE
+app.get('/esplanada/create', (req, res) => {
+    res.render('esplanada/create.ejs')
+})
+//SHOW
+app.get('/esplanada/show', (req, res) => {
+    db.collection('esplanada').find().toArray((err, results) => {
+        if (err) return console.log(err)
+        res.render('esplanada/show.ejs', { data: results })
+    })
+})
+app.post('/esplanada/show', (req, res) => {
+    db.collection('esplanada').save(req.body, (err, result) => {
+        if (err) return console.log(err)
+        console.log('Salvo no Banco de Dados')
+        res.redirect('/esplanada/show')
+    })
+})
+//EDIT
+app.route('/esplanada/edit/:id')
+.get((req, res)=>{
+  var id = req.params.id
+  db.collection('esplanada').find(ObjectId(id)).toArray((err, result) => {
+    if (err) return res.send(err)
+    res.render('esplanada/edit.ejs', {data: result})
+  })
+})
+.post((req, res) =>{
+  var id = req.params.id
+  var codigo = req.body.codigo
+  var nome = req.body.nome
+  var valor = req.body.valor
+
+  db.collection('esplanada').updateOne({_id: ObjectId(id)}, {
+    $set: {
+      codigo: codigo,
+      nome: nome,
+      valor: valor
+    }
+  },(err, result)=>{
+    if(err) return res.send(err)
+    res.redirect('/esplanada/show')
+    console.log("Atualizado no banco de dados");
+  })
+
+})
+//DELETE
+app.route('/esplanada/delete/:id')
+.get((req, res) =>{
+  var id = req.params.id
+  db.collection('esplanada').deleteOne({_id: ObjectId(id)}, (err, result) => {
+    if(err) return res.send(500, err)
+    console.log('Deletado do Banco de dados');
+    res.redirect('/esplanada/show')
+  })
+})
+
 //Rotas do CRUD VALOR PORTA ----------------------------------------------------------
 //CREATE
 app.get('/portas/valor/create', (req, res) => {
@@ -564,6 +622,8 @@ app.post('/pedido/salvarempresa', (req, res) => {
     res.redirect('/pedido/create/adicionarProdutoReserva/'+pedido)
   }else if (req.body.representada == "Sulflex") {
     res.redirect('/pedido/create/adicionarProdutoSulflex/'+pedido)
+  }else if (req.body.representada == "Vassouras Esplanada") {
+    res.redirect('/pedido/create/adicionarProdutoEsplanada/'+pedido)
   }
 });
 
@@ -605,6 +665,13 @@ app.get('/pedido/create/adicionarProdutoSulflex/:id', (req, res) => {
         res.render('pedido/addProduto.ejs', { data1: results1, pedido_id: pedido_id })
   })
 })
+app.get('/pedido/create/adicionarProdutoEsplanada/:id', (req, res) => {
+  var pedido_id = req.params.id
+  db.collection('esplanada').find().toArray((err, results1) => {
+      if (err) return console.log(err)
+        res.render('pedido/addProduto.ejs', { data1: results1, pedido_id: pedido_id })
+  })
+})
 
 app.post('/pedido/salvarproduto', (req, res) => {
   db.collection('produto').save(req.body, (err, result) => {
@@ -622,6 +689,8 @@ app.post('/pedido/salvarproduto', (req, res) => {
         res.redirect('/pedido/create/adicionarProdutoReserva/'+pedido)
       }else if (result1[0].representada == "Sulflex") {
         res.redirect('/pedido/create/adicionarProdutoSulflex/'+pedido)
+      }else if (result1[0].representada == "Vassouras Esplanada") {
+        res.redirect('/pedido/create/adicionarProdutoEsplanada/'+pedido)
       }
     })
   })
@@ -733,6 +802,8 @@ app.get('/pedido/mostrarLista/:id', (req, res) => {
             representadaAuxiliar = "reserva"
           }else if (result1[0].representada == "Sulflex") {
             representadaAuxiliar = "sulflex"
+          }else if (result1[0].representada == "Vassouras Esplanada") {
+            representadaAuxiliar = "esplanada"
           }
           db.collection(representadaAuxiliar).find().toArray((err, argamassas) => {
             if (err) return res.send(err)
@@ -928,6 +999,35 @@ app.route('/produto/editProdutoSulflex/:id')
       console.log("Atualizado no banco de dados");
 })
 
+app.route('/produto/editProdutoEsplanada/:id')
+  .get((req, res)=>{
+    var id = req.params.id
+    db.collection('produto').find(ObjectId(id)).toArray((err, result) => {
+      if (err) return res.send(err)
+      pedido_id_edit = result[0].pedido_id
+      db.collection('esplanada').find().toArray((err, results1) => {
+          if (err) return console.log(err)
+          res.render('pedido/editProduto.ejs', {data: result ,data1: results1 })
+      })
+    })
+  })
+  .post((req, res) =>{
+    var id = req.params.id
+    var quantidade = req.body.quantidade
+    var codigo = req.body.codigo
+
+    db.collection('produto').updateOne({_id: ObjectId(id)}, {
+      $set: {
+        quantidade: quantidade,
+        codigo: codigo,
+      }
+    },(err, result)=>{
+      if(err) return res.send(err)
+      res.redirect('/pedido/mostrarLista/'+pedido_id_edit)
+      })
+      console.log("Atualizado no banco de dados");
+})
+
 function deleteLocalFile (nomeDoPedido){
   fs.unlink(nomeDoPedido, function (err){
     if (err) throw err;
@@ -1019,6 +1119,21 @@ app.post('/pedido/gerarPlanilha', (req, res) => {
               evenHeader: '&24&PEDIDO SULFLEX MANGUEIRAS&24',
               firstHeader: '&24PEDIDO SULFLEX MANGUEIRAS&24',
               oddHeader: '&24PEDIDO SULFLEX MANGUEIRAS&24',
+            },
+            margins: {
+              left: 0.3,
+              right: 0.3,
+            },
+            printOptions: {
+              centerHorizontal: true,
+            },
+          };
+        }else if(result1[0].representada == "Vassouras Esplanada"){
+          var options = {
+            headerFooter: {
+              evenHeader: '&24&PEDIDO VASSOURAS ESPLANADA&24',
+              firstHeader: '&24PEDIDO VASSOURAS ESPLANADA&24',
+              oddHeader: '&24PEDIDO VASSOURAS ESPLANADA&24',
             },
             margins: {
               left: 0.3,
@@ -1163,6 +1278,8 @@ app.post('/pedido/gerarPlanilha', (req, res) => {
           myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '18-MJWo22dyKqvKMAuN8XgCEmvq_nQBc6');
         }else if(result1[0].representada == "Sulflex"){
           myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1EzAYx8PjyMBgzwrJhttDmwRCFQU8r92B');
+        }else if(result1[0].representada == "Vassouras Esplanada"){
+          myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1UYC7hGp1OXNAU7FQqDMCEhv7ThiXmfz3');
         }
         db.collection('prazo').find().toArray((err, prazo) => {
           res.redirect('/pedido/mostrarLista/'+id)
