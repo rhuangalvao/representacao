@@ -104,6 +104,8 @@
                 <td><a href="/produto/editProdutoFiocab/<%= details._id %>">Editar</a> - <a href="/produto/delete/<%= details._id %>">Deletar</a></td>
                 <% }else if(pedido[0].representada == "Reserva Ferramentas"){ %>
                 <td><a href="/produto/editProdutoReserva/<%= details._id %>">Editar</a> - <a href="/produto/delete/<%= details._id %>">Deletar</a></td>
+                <% }else if(pedido[0].representada == "Sulflex"){ %>
+                <td><a href="/produto/editProdutoSulflex/<%= details._id %>">Editar</a> - <a href="/produto/delete/<%= details._id %>">Deletar</a></td>
                 <% } %>
             </tr>
         <% }) %>
@@ -123,6 +125,8 @@
         <a class="btn btn-primary " href="/pedido/create/adicionarProdutoFiocab/<%= pedido[0]._id %>">Adicionar Produto</a>
       <% }else if(pedido[0].representada == "Reserva Ferramentas"){ %>
         <a class="btn btn-primary " href="/pedido/create/adicionarProdutoReserva/<%= pedido[0]._id %>">Adicionar Produto</a>
+      <% }else if(pedido[0].representada == "Sulflex"){ %>
+        <a class="btn btn-primary " href="/pedido/create/adicionarProdutoSulflex/<%= pedido[0]._id %>">Adicionar Produto</a>
       <% } %>
     </div>
     <div class="col-sm">

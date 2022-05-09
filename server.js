@@ -275,6 +275,64 @@ app.route('/reserva/delete/:id')
   })
 })
 
+//Rotas do CRUD SULFLEX ----------------------------------------------------------
+//CREATE
+app.get('/sulflex/create', (req, res) => {
+    res.render('sulflex/create.ejs')
+})
+//SHOW
+app.get('/sulflex/show', (req, res) => {
+    db.collection('sulflex').find().toArray((err, results) => {
+        if (err) return console.log(err)
+        res.render('sulflex/show.ejs', { data: results })
+    })
+})
+app.post('/sulflex/show', (req, res) => {
+    db.collection('sulflex').save(req.body, (err, result) => {
+        if (err) return console.log(err)
+        console.log('Salvo no Banco de Dados')
+        res.redirect('/sulflex/show')
+    })
+})
+//EDIT
+app.route('/sulflex/edit/:id')
+.get((req, res)=>{
+  var id = req.params.id
+  db.collection('sulflex').find(ObjectId(id)).toArray((err, result) => {
+    if (err) return res.send(err)
+    res.render('sulflex/edit.ejs', {data: result})
+  })
+})
+.post((req, res) =>{
+  var id = req.params.id
+  var codigo = req.body.codigo
+  var nome = req.body.nome
+  var valor = req.body.valor
+
+  db.collection('sulflex').updateOne({_id: ObjectId(id)}, {
+    $set: {
+      codigo: codigo,
+      nome: nome,
+      valor: valor
+    }
+  },(err, result)=>{
+    if(err) return res.send(err)
+    res.redirect('/sulflex/show')
+    console.log("Atualizado no banco de dados");
+  })
+
+})
+//DELETE
+app.route('/sulflex/delete/:id')
+.get((req, res) =>{
+  var id = req.params.id
+  db.collection('sulflex').deleteOne({_id: ObjectId(id)}, (err, result) => {
+    if(err) return res.send(500, err)
+    console.log('Deletado do Banco de dados');
+    res.redirect('/sulflex/show')
+  })
+})
+
 //Rotas do CRUD VALOR PORTA ----------------------------------------------------------
 //CREATE
 app.get('/portas/valor/create', (req, res) => {
@@ -504,6 +562,8 @@ app.post('/pedido/salvarempresa', (req, res) => {
     res.redirect('/pedido/create/adicionarProdutoFiocab/'+pedido)
   }else if (req.body.representada == "Reserva Ferramentas") {
     res.redirect('/pedido/create/adicionarProdutoReserva/'+pedido)
+  }else if (req.body.representada == "Sulflex") {
+    res.redirect('/pedido/create/adicionarProdutoSulflex/'+pedido)
   }
 });
 
@@ -538,6 +598,13 @@ app.get('/pedido/create/adicionarProdutoReserva/:id', (req, res) => {
         res.render('pedido/addProduto.ejs', { data1: results1, pedido_id: pedido_id })
   })
 })
+app.get('/pedido/create/adicionarProdutoSulflex/:id', (req, res) => {
+  var pedido_id = req.params.id
+  db.collection('sulflex').find().toArray((err, results1) => {
+      if (err) return console.log(err)
+        res.render('pedido/addProduto.ejs', { data1: results1, pedido_id: pedido_id })
+  })
+})
 
 app.post('/pedido/salvarproduto', (req, res) => {
   db.collection('produto').save(req.body, (err, result) => {
@@ -553,6 +620,8 @@ app.post('/pedido/salvarproduto', (req, res) => {
         res.redirect('/pedido/create/adicionarProdutoFiocab/'+pedido)
       }else if (result1[0].representada == "Reserva Ferramentas") {
         res.redirect('/pedido/create/adicionarProdutoReserva/'+pedido)
+      }else if (result1[0].representada == "Sulflex") {
+        res.redirect('/pedido/create/adicionarProdutoSulflex/'+pedido)
       }
     })
   })
@@ -653,83 +722,19 @@ app.get('/pedido/mostrarLista/:id', (req, res) => {
             })
           })
 
-          //SE FOR ARGACEL
-        }else if (result1[0].representada == "Argamassas Argacel") {
-          db.collection('argacel').find().toArray((err, argamassas) => {
-            if (err) return res.send(err)
-            result2.forEach(function(produto){
-              argamassas.forEach(function(argamassa){
-                if(produto.codigo == argamassa.codigo){
-                  db.collection('produto').updateOne({_id: ObjectId(produto._id)}, {
-                    $set: {
-                      nome: argamassa.nome,
-                      total: (produto.quantidade * parseFloat(argamassa.valor.replace(",", "."))).toFixed(2)
-                    }
-                  },(err, result)=>{
-                    if(err) return res.send(err)
-                  })
-                  produto.valor = (produto.quantidade * parseFloat(argamassa.valor.replace(",", "."))).toFixed(2)
-                }
-              })
-            })
-            result2.forEach(function(produto){
-              pedido_valor_total = pedido_valor_total + parseFloat(produto.valor)
-            })
-            result1.valor_total = pedido_valor_total.toFixed(2)
-            var numero =  parseFloat(result1.valor_total);
-            var dinheiro = numero.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
-            var total = dinheiro.slice(3, dinheiro.lenght);
-            db.collection('pedido').updateOne({_id: ObjectId(id)}, {
-              $set: {
-                valor_total: total
-              }
-            },(err, result)=>{
-              if(err) return res.send(err)
-            })
-            db.collection('prazo').find().toArray((err, prazo) => {
-              res.render('pedido/show.ejs', { pedido: result1, produto: result2, empresa: result3, prazo: prazo})
-            })
-          })
-
-          //SE FOR FIOCAB
-        }else if (result1[0].representada == "FIOCAB") {
-          db.collection('fiocab').find().toArray((err, argamassas) => {
-            if (err) return res.send(err)
-            result2.forEach(function(produto){
-              argamassas.forEach(function(argamassa){
-                if(produto.codigo == argamassa.codigo){
-                  db.collection('produto').updateOne({_id: ObjectId(produto._id)}, {
-                    $set: {
-                      nome: argamassa.nome,
-                      total: (produto.quantidade * parseFloat(argamassa.valor.replace(",", "."))).toFixed(2)
-                    }
-                  },(err, result)=>{
-                    if(err) return res.send(err)
-                  })
-                  produto.valor = (produto.quantidade * parseFloat(argamassa.valor.replace(",", "."))).toFixed(2)
-                }
-              })
-            })
-            result2.forEach(function(produto){
-              pedido_valor_total = pedido_valor_total + parseFloat(produto.valor)
-            })
-            result1.valor_total = pedido_valor_total.toFixed(2)
-            var numero =  parseFloat(result1.valor_total);
-            var dinheiro = numero.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
-            var total = dinheiro.slice(3, dinheiro.lenght);
-            db.collection('pedido').updateOne({_id: ObjectId(id)}, {
-              $set: {
-                valor_total: total
-              }
-            },(err, result)=>{
-              if(err) return res.send(err)
-            })
-            db.collection('prazo').find().toArray((err, prazo) => {
-              res.render('pedido/show.ejs', { pedido: result1, produto: result2, empresa: result3, prazo: prazo})
-            })
-          })
-        }else if (result1[0].representada == "Reserva Ferramentas") {
-          db.collection('reserva').find().toArray((err, argamassas) => {
+          //SE FOR OUTRO
+        }else{
+          var representadaAuxiliar = ""
+          if(result1[0].representada == "Argamassas Argacel"){
+            representadaAuxiliar = "argacel"
+          }else if (result1[0].representada == "FIOCAB") {
+            representadaAuxiliar = "fiocab"
+          }else if (result1[0].representada == "Reserva Ferramentas") {
+            representadaAuxiliar = "reserva"
+          }else if (result1[0].representada == "Sulflex") {
+            representadaAuxiliar = "sulflex"
+          }
+          db.collection(representadaAuxiliar).find().toArray((err, argamassas) => {
             if (err) return res.send(err)
             result2.forEach(function(produto){
               argamassas.forEach(function(argamassa){
@@ -765,8 +770,6 @@ app.get('/pedido/mostrarLista/:id', (req, res) => {
             })
           })
         }
-        //SE FOR ....
-
       })
     })
   })
@@ -896,7 +899,34 @@ app.route('/produto/editProdutoReserva/:id')
     console.log("Atualizado no banco de dados");
   })
 
+app.route('/produto/editProdutoSulflex/:id')
+  .get((req, res)=>{
+    var id = req.params.id
+    db.collection('produto').find(ObjectId(id)).toArray((err, result) => {
+      if (err) return res.send(err)
+      pedido_id_edit = result[0].pedido_id
+      db.collection('sulflex').find().toArray((err, results1) => {
+          if (err) return console.log(err)
+          res.render('pedido/editProduto.ejs', {data: result ,data1: results1 })
+      })
+    })
+  })
+  .post((req, res) =>{
+    var id = req.params.id
+    var quantidade = req.body.quantidade
+    var codigo = req.body.codigo
 
+    db.collection('produto').updateOne({_id: ObjectId(id)}, {
+      $set: {
+        quantidade: quantidade,
+        codigo: codigo,
+      }
+    },(err, result)=>{
+      if(err) return res.send(err)
+      res.redirect('/pedido/mostrarLista/'+pedido_id_edit)
+      })
+      console.log("Atualizado no banco de dados");
+})
 
 function deleteLocalFile (nomeDoPedido){
   fs.unlink(nomeDoPedido, function (err){
@@ -974,6 +1004,21 @@ app.post('/pedido/gerarPlanilha', (req, res) => {
               evenHeader: '&24&PEDIDO RESERVA FERRAMENTAS&24',
               firstHeader: '&24PEDIDO RESERVA FERRAMENTAS&24',
               oddHeader: '&24PEDIDO RESERVA FERRAMENTAS&24',
+            },
+            margins: {
+              left: 0.3,
+              right: 0.3,
+            },
+            printOptions: {
+              centerHorizontal: true,
+            },
+          };
+        }else if(result1[0].representada == "Sulflex"){
+          var options = {
+            headerFooter: {
+              evenHeader: '&24&PEDIDO SULFLEX MANGUEIRAS&24',
+              firstHeader: '&24PEDIDO SULFLEX MANGUEIRAS&24',
+              oddHeader: '&24PEDIDO SULFLEX MANGUEIRAS&24',
             },
             margins: {
               left: 0.3,
@@ -1116,6 +1161,8 @@ app.post('/pedido/gerarPlanilha', (req, res) => {
           myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '19cJAyQT4WiRQT60XcRLHePMPLDQYzaUz');
         }else if(result1[0].representada == "Reserva Ferramentas"){
           myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '18-MJWo22dyKqvKMAuN8XgCEmvq_nQBc6');
+        }else if(result1[0].representada == "Sulflex"){
+          myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1EzAYx8PjyMBgzwrJhttDmwRCFQU8r92B');
         }
         db.collection('prazo').find().toArray((err, prazo) => {
           res.redirect('/pedido/mostrarLista/'+id)
@@ -1140,8 +1187,6 @@ function reformatDate(dateStr)
   dArr = dateStr.split("-");  // ex input "2010-01-18"
   return dArr[2]+ " " +dArr[1]+ " " +dArr[0]; //ex out: "18/01/10"
 }
-
-
 
 //DELETE PRODUTO
 app.route('/produto/delete/:id')
@@ -1170,5 +1215,4 @@ app.route('/pedido/delete/:id')
     })
     res.redirect('/pedido/listarPedidos')
   })
-
 })
