@@ -605,7 +605,8 @@ app.post('/pedido/salvarempresa', (req, res) => {
     db.collection('pedido').updateOne({_id: ObjectId(req.body._id)}, {
       $set: {
         empresa_nome: result1[0].razaosocial,
-        empresa_nome_fantasia: result1[0].nomefantasia
+        empresa_nome_fantasia: result1[0].nomefantasia,
+        cidade: result1[0].cidade
       }
     },(err, result)=>{
       if(err) return res.send(err)
@@ -1333,3 +1334,375 @@ app.route('/pedido/delete/:id')
     res.redirect('/pedido/listarPedidos')
   })
 })
+
+
+app.get('/pedido/relatorio', (req, res) => {
+  db.collection('representada').find().toArray((err, results1) => {
+      if (err) return console.log(err)
+      res.render('pedido/relatorio.ejs', {representada: results1 })
+  })
+})
+
+app.post('/pedido/gerarRelatorio', (req, res) => {
+  var representada = req.body.representada
+  var mesAno = req.body.data
+  db.collection('pedido').find({representada: representada}).toArray((err, result1) => {
+    if (err) return res.send(err)
+    var razaosocial_id = result1[0].razaosocial_id
+    db.collection('empresa').find({_id: ObjectId(razaosocial_id)}).toArray((err, result3) => {
+      if (err) return res.send(err)
+      // CRIAR A PLANILHA
+      const wb = new xl.Workbook();
+
+      var options = {
+        margins: {
+          left: 0.3,
+          right: 0.3,
+        },
+        printOptions: {
+          centerHorizontal: true,
+        },
+      };
+
+      const ws = wb.addWorksheet('Worksheet Name', options);
+
+      var colunaData = wb.createStyle({
+        alignment: {
+          horizontal: 'right',
+        },
+      });
+      var centralizado = wb.createStyle({
+        alignment: {
+          horizontal: 'center',
+        },
+      });
+      var valor = wb.createStyle({
+        numberFormat: '#,##0.00; (#,##.00); -',
+        font: {
+          bold: true,
+        },
+      });
+      var negrito = wb.createStyle({
+        font: {
+          bold: true,
+        },
+      });
+      const borda = wb.createStyle({
+      	border: {
+      		left: {
+      			style: 'thin',
+      			color: 'black',
+      		},
+      		right: {
+      			style: 'thin',
+      			color: 'black',
+      		},
+      		top: {
+      			style: 'thin',
+      			color: 'black',
+      		},
+      		bottom: {
+      			style: 'thin',
+      			color: 'black',
+      		},
+      		outline: false,
+      	},
+      });
+
+      ws.column(1).setWidth(45);
+      ws.column(2).setWidth(12);
+      ws.column(3).setWidth(12);
+      ws.column(4).setWidth(12);
+
+      ws.cell(1, 1).string(result1[0].representada + " Comissão à receber mês " + reformatMesAno(mesAno));
+      ws.cell(2, 1).string("PEDIDOS");
+      ws.cell(2, 4).string("com. 15%");
+
+      let linhaIndex = 3;
+      var comissao_total = 0
+
+      result1.forEach(function(pedido){
+        if (result1[0].data.includes(mesAno)) {
+          ws.cell(linhaIndex, 1).string(pedido.empresa_nome);
+          ws.cell(linhaIndex, 3).number(parseFloat(pedido.valor_total.replace(".", ""))).style(valor);
+          ws.cell(linhaIndex, 4).number(parseFloat(pedido.valor_total.replace(".", "")) * 0.15).style(valor);
+          comissao_total = comissao_total + (parseFloat(pedido.valor_total.replace(".", "")) * 0.15)
+          linhaIndex++;
+        }
+      })
+      var linhaTotal = linhaIndex - 1
+      ws.cell(linhaIndex, 3).formula('SUM(C3:C'+ linhaTotal + ')').style(valor);
+      ws.cell(linhaIndex, 4).formula('SUM(D3:D'+ linhaTotal + ')').style(valor);
+      var bordaInferior = linhaIndex
+
+      linhaIndex+=2;
+
+      ws.cell(linhaIndex, 1).string("Luiz Aristeu Galvão da Rocha");
+      ws.cell(linhaIndex++, 2).string("cpf-339.081.509-06");
+      ws.cell(linhaIndex++, 1).string("Banco do Brasil");
+      ws.cell(linhaIndex++, 1).string("Agência = 3172-0");
+      ws.cell(linhaIndex++, 1).string("Conta = 15413-X");
+      ws.cell(linhaIndex, 1).string("Valor");
+      ws.cell(linhaIndex, 2).formula("=D"+bordaInferior);
+
+
+      ws.cell(1, 1, bordaInferior, 4).style(borda);
+
+      var numero =  parseFloat(comissao_total);
+      var dinheiro = numero.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
+      var total = dinheiro.slice(3, dinheiro.lenght);
+      const nomeDoPedido = "Comissão " + result1[0].representada + " " + reformatMesAno(mesAno) + " " + total + ".xlsx";
+      wb.write(nomeDoPedido);
+      console.log('Arquivo local criado!');
+
+      // if (result1[0].representada == "Argamassas Argacel") {
+      //   myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1UZuNMijw1J5ByOVP3nZAcoGsKygqkKoD');
+      // }else if(result1[0].representada == "Portas Salete"){
+      //   myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1-bD4Zi3QrT7WQWuksphPCCvGPKh2HGv6');
+      // }else if(result1[0].representada == "FIOCAB"){
+      //   myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '19cJAyQT4WiRQT60XcRLHePMPLDQYzaUz');
+      // }else if(result1[0].representada == "Reserva Ferramentas"){
+      //   myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '18-MJWo22dyKqvKMAuN8XgCEmvq_nQBc6');
+      // }else if(result1[0].representada == "Sulflex"){
+      //   myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1EzAYx8PjyMBgzwrJhttDmwRCFQU8r92B');
+      // }else if(result1[0].representada == "Vassouras Esplanada"){
+      //   myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1UYC7hGp1OXNAU7FQqDMCEhv7ThiXmfz3');
+      // }
+      res.redirect('/pedido/listarPedidos')
+    })
+  })
+});
+
+function reformatMesAno(dateStr)
+{
+  dArr = dateStr.split("-");  // ex input "2022-01-18"
+  return dArr[1]+ " " +dArr[0]; //ex out: "01 2022"
+}
+
+app.get('/pedido/relatorioDeyse', (req, res) => {
+  res.render('pedido/relatorioDeyse.ejs')
+})
+
+app.post('/pedido/gerarRelatorioDeyse', (req, res) => {
+  var mesAno = req.body.data
+  db.collection('pedido').find().toArray((err, result1) => {
+    if (err) return res.send(err)
+      // CRIAR A PLANILHA
+      const wb = new xl.Workbook();
+
+      var options = {
+        margins: {
+          left: 0.3,
+          right: 0.3,
+        },
+        printOptions: {
+          centerHorizontal: true,
+        },
+      };
+
+      const ws = wb.addWorksheet('Worksheet Name', options);
+      var valor = wb.createStyle({
+        numberFormat: '#,##0.00; (#,##.00); -',
+        font: {
+          bold: true,
+        },
+      });
+      var negrito = wb.createStyle({
+        font: {
+          bold: true,
+        },
+      });
+      const borda = wb.createStyle({
+      	border: {
+      		left: {
+      			style: 'thin',
+      			color: 'black',
+      		},
+      		right: {
+      			style: 'thin',
+      			color: 'black',
+      		},
+      		top: {
+      			style: 'thin',
+      			color: 'black',
+      		},
+      		bottom: {
+      			style: 'thin',
+      			color: 'black',
+      		},
+      		outline: false,
+      	},
+      });
+
+      ws.column(1).setWidth(45);
+      ws.column(2).setWidth(12);
+      ws.column(3).setWidth(12);
+      ws.column(4).setWidth(12);
+
+      ws.cell(1, 1).string("Comissão referente a " + reformatMesAno(mesAno)).style(negrito);
+      ws.cell(1, 3).string("DEYSE").style(negrito);
+      ws.cell(2, 1).string("PEDIDOS").style(negrito);
+
+      let linhaIndex = 3;
+      var comissao_total = 0
+      var auxRep = ""
+      var auxCom = 0
+      var linhaInicio = 4
+
+      ws.cell(linhaIndex, 1).string("Sulflex").style(negrito);
+      ws.cell(linhaIndex++, 3).string("com. 3%");
+
+      result1.forEach(function(pedido){
+          if (pedido.data.includes(mesAno)) {
+            if (pedido.usuario == "DEYSE" || pedido.cidade == "Ponta Grossa") {
+              if (pedido.representada == "Sulflex") {
+                auxRep = "Sulflex";
+                auxCom = 3;
+                ws.cell(linhaIndex, 1).string(pedido.empresa_nome);
+                ws.cell(linhaIndex, 2).number(parseFloat(pedido.valor_total.replace(".", ""))).style(valor);
+                ws.cell(linhaIndex, 3).formula('=B'+linhaIndex+'*'+auxCom+"/100").style(valor);
+                comissao_total+= (parseFloat(pedido.valor_total.replace(".", "")) * auxCom / 100)
+                linhaIndex++;
+              }
+            }
+          }
+      })
+
+      var linhaTotal = linhaIndex - 1
+      ws.cell(linhaIndex, 2).formula('SUM(B'+ linhaInicio +':B'+ linhaTotal + ')').style(valor);
+      ws.cell(linhaIndex, 3).formula('SUM(C'+ linhaInicio +':C'+ linhaTotal + ')').style(valor);
+      ws.cell(linhaIndex, 4).formula('SUM(C'+ linhaInicio +':C'+ linhaTotal + ')').style(valor);
+      linhaIndex++;
+      linhaIndex++;
+      linhaInicio = linhaIndex
+
+      ws.cell(linhaIndex, 1).string("Vassouras Esplanada").style(negrito);
+      ws.cell(linhaIndex++, 3).string("com. 7.5%");
+      result1.forEach(function(pedido){
+          if (pedido.data.includes(mesAno)) {
+            if (pedido.usuario == "DEYSE" || pedido.cidade == "Ponta Grossa") {
+              if (pedido.representada == "Vassouras Esplanada") {
+                auxRep = "Vassouras Esplanada";
+                auxCom = 7.5;
+                ws.cell(linhaIndex, 1).string(pedido.empresa_nome);
+                ws.cell(linhaIndex, 2).number(parseFloat(pedido.valor_total.replace(".", ""))).style(valor);
+                ws.cell(linhaIndex, 3).formula('=B'+linhaIndex+'*'+auxCom+"/100").style(valor);
+                comissao_total+= (parseFloat(pedido.valor_total.replace(".", "")) * auxCom / 100)
+                linhaIndex++;
+              }
+            }
+          }
+      })
+
+      var linhaTotal = linhaIndex - 1
+      ws.cell(linhaIndex, 2).formula('SUM(B'+ linhaInicio +':B'+ linhaTotal + ')').style(valor);
+      ws.cell(linhaIndex, 3).formula('SUM(C'+ linhaInicio +':C'+ linhaTotal + ')').style(valor);
+      ws.cell(linhaIndex, 4).formula('SUM(C'+ linhaInicio +':C'+ linhaTotal + ')').style(valor);
+      linhaIndex++;
+      linhaIndex++;
+      linhaInicio = linhaIndex
+
+      ws.cell(linhaIndex, 1).string("Portas Salete").style(negrito);
+      ws.cell(linhaIndex++, 3).string("com. 2.5%");
+      result1.forEach(function(pedido){
+          if (pedido.data.includes(mesAno)) {
+            if (pedido.usuario == "DEYSE" || pedido.cidade == "Ponta Grossa") {
+              if (pedido.representada == "Portas Salete") {
+                auxRep = "Portas Salete";
+                auxCom = 2.5;
+                ws.cell(linhaIndex, 1).string(pedido.empresa_nome);
+                ws.cell(linhaIndex, 2).number(parseFloat(pedido.valor_total.replace(".", ""))).style(valor);
+                ws.cell(linhaIndex, 3).formula('=B'+linhaIndex+'*'+auxCom+"/100").style(valor);
+                comissao_total+= (parseFloat(pedido.valor_total.replace(".", "")) * auxCom / 100)
+                linhaIndex++;
+              }
+            }
+          }
+      })
+
+      var linhaTotal = linhaIndex - 1
+      ws.cell(linhaIndex, 2).formula('SUM(B'+ linhaInicio +':B'+ linhaTotal + ')').style(valor);
+      ws.cell(linhaIndex, 3).formula('SUM(C'+ linhaInicio +':C'+ linhaTotal + ')').style(valor);
+      ws.cell(linhaIndex, 4).formula('SUM(C'+ linhaInicio +':C'+ linhaTotal + ')').style(valor);
+      linhaIndex++;
+      linhaIndex++;
+      linhaInicio = linhaIndex
+
+      ws.cell(linhaIndex, 1).string("SOMA").style(negrito);
+      ws.cell(linhaIndex, 4).number(comissao_total).style(negrito);
+
+      linhaIndex++;
+      linhaIndex++;
+
+      var comissao_reserva = 0
+      ws.cell(linhaIndex, 1).string("Reserva Ferramentas").style(negrito);
+      ws.cell(linhaIndex++, 3).string("com. 5%");
+      result1.forEach(function(pedido){
+          if (pedido.data.includes(mesAno)) {
+            if (pedido.usuario == "DEYSE" || pedido.cidade == "Ponta Grossa") {
+              if (pedido.representada == "Reserva Ferramentas") {
+                auxRep = "Reserva Ferramentas";
+                auxCom = 5;
+                ws.cell(linhaIndex, 1).string(pedido.empresa_nome);
+                ws.cell(linhaIndex, 2).number(parseFloat(pedido.valor_total.replace(".", ""))).style(valor);
+                ws.cell(linhaIndex, 3).formula('=B'+linhaIndex+'*'+auxCom+"/100").style(valor);
+                comissao_reserva+= (parseFloat(pedido.valor_total.replace(".", "")) * auxCom / 100)
+                linhaIndex++;
+              }
+            }
+          }
+      })
+
+      var linhaTotal = linhaIndex - 1
+      ws.cell(linhaIndex, 2).formula('SUM(B'+ linhaInicio +':B'+ linhaTotal + ')').style(valor);
+      ws.cell(linhaIndex, 3).formula('SUM(C'+ linhaInicio +':C'+ linhaTotal + ')').style(valor);
+      ws.cell(linhaIndex, 4).formula('SUM(C'+ linhaInicio +':C'+ linhaTotal + ')').style(valor);
+      linhaIndex++;
+      linhaIndex++;
+      linhaInicio = linhaIndex
+
+
+      ws.cell(linhaIndex++, 3).string("com. 6%");
+      result1.forEach(function(pedido){
+          if (pedido.data.includes(mesAno)) {
+            if (pedido.usuario == "DEYSE" || pedido.cidade == "Ponta Grossa") {
+
+            }else{
+              if (pedido.representada == "Reserva Ferramentas") {
+                auxRep = "Reserva Ferramentas";
+                auxCom = 6;
+                ws.cell(linhaIndex, 1).string(pedido.empresa_nome);
+                ws.cell(linhaIndex, 2).number(parseFloat(pedido.valor_total.replace(".", ""))).style(valor);
+                ws.cell(linhaIndex, 3).formula('=B'+linhaIndex+'*'+auxCom+"/100").style(valor);
+                comissao_reserva+= (parseFloat(pedido.valor_total.replace(".", "")) * auxCom / 100)
+                linhaIndex++;
+              }
+            }
+          }
+      })
+      var linhaTotal = linhaIndex - 1
+      ws.cell(linhaIndex, 2).formula('SUM(B'+ linhaInicio +':B'+ linhaTotal + ')').style(valor);
+      ws.cell(linhaIndex, 3).formula('SUM(C'+ linhaInicio +':C'+ linhaTotal + ')').style(valor);
+      ws.cell(linhaIndex, 4).formula('SUM(C'+ linhaInicio +':C'+ linhaTotal + ')').style(valor);
+      linhaIndex++;
+      linhaIndex++;
+      linhaInicio = linhaIndex
+
+      ws.cell(linhaIndex, 1).string("TOTAL").style(negrito);
+      ws.cell(linhaIndex, 4).number(comissao_total - comissao_reserva).style(negrito);
+      ws.cell(linhaIndex, 5).number(439.03).style(valor);
+      ws.cell(linhaIndex, 6).formula("=D"+linhaIndex+"-E"+linhaIndex).style(negrito);
+
+      ws.cell(1, 1, linhaIndex, 4).style(borda);
+
+      var numero =  parseFloat(comissao_total);
+      var dinheiro = numero.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
+      var total = dinheiro.slice(3, dinheiro.lenght);
+      const nomeDoPedido = "Comissão Deyse mês de " + reformatMesAno(mesAno) + " " + total + ".xlsx";
+      wb.write(nomeDoPedido);
+      console.log('Arquivo local criado!');
+      // myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1C2HS3uYLkPfBJOlyUJmO64XRQ94carT5');
+
+      res.redirect('/pedido/listarPedidos')
+  })
+});
