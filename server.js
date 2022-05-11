@@ -687,6 +687,23 @@ app.post('/pedido/salvarproduto', (req, res) => {
       }else if (result1[0].representada == "FIOCAB") {
         res.redirect('/pedido/create/adicionarProdutoFiocab/'+pedido)
       }else if (result1[0].representada == "Reserva Ferramentas") {
+        if (req.body.codigo == "M_R_1,20" || req.body.codigo == "M_R_1,50" || req.body.codigo == "M_X_1,20" || req.body.codigo == "M_X_1,50") {
+          db.collection('pedido').updateOne({_id: ObjectId(pedido)}, {
+            $set: {
+              tipo: "Mesa",
+            }
+          },(err, result)=>{
+            if(err) return res.send(err)
+          })
+        }else {
+          db.collection('pedido').updateOne({_id: ObjectId(pedido)}, {
+            $set: {
+              tipo: "Normal",
+            }
+          },(err, result)=>{
+            if(err) return res.send(err)
+          })
+        }
         res.redirect('/pedido/create/adicionarProdutoReserva/'+pedido)
       }else if (result1[0].representada == "Sulflex") {
         res.redirect('/pedido/create/adicionarProdutoSulflex/'+pedido)
@@ -1348,128 +1365,199 @@ app.post('/pedido/gerarRelatorio', (req, res) => {
   var mesAno = req.body.data
   db.collection('pedido').find({representada: representada}).toArray((err, result1) => {
     if (err) return res.send(err)
-    var razaosocial_id = result1[0].razaosocial_id
-    db.collection('empresa').find({_id: ObjectId(razaosocial_id)}).toArray((err, result3) => {
-      if (err) return res.send(err)
-      // CRIAR A PLANILHA
-      const wb = new xl.Workbook();
+    // CRIAR A PLANILHA
+    const wb = new xl.Workbook();
 
-      var options = {
-        margins: {
-          left: 0.3,
-          right: 0.3,
-        },
-        printOptions: {
-          centerHorizontal: true,
-        },
-      };
+    var options = {
+      margins: {
+        left: 0.3,
+        right: 0.3,
+      },
+      printOptions: {
+        centerHorizontal: true,
+      },
+    };
 
-      const ws = wb.addWorksheet('Worksheet Name', options);
+    const ws = wb.addWorksheet('Worksheet Name', options);
 
-      var colunaData = wb.createStyle({
-        alignment: {
-          horizontal: 'right',
-        },
-      });
-      var centralizado = wb.createStyle({
-        alignment: {
-          horizontal: 'center',
-        },
-      });
-      var valor = wb.createStyle({
-        numberFormat: '#,##0.00; (#,##.00); -',
-        font: {
-          bold: true,
-        },
-      });
-      var negrito = wb.createStyle({
-        font: {
-          bold: true,
-        },
-      });
-      const borda = wb.createStyle({
-      	border: {
-      		left: {
-      			style: 'thin',
-      			color: 'black',
-      		},
-      		right: {
-      			style: 'thin',
-      			color: 'black',
-      		},
-      		top: {
-      			style: 'thin',
-      			color: 'black',
-      		},
-      		bottom: {
-      			style: 'thin',
-      			color: 'black',
-      		},
-      		outline: false,
-      	},
-      });
+    var colunaData = wb.createStyle({
+      alignment: {
+        horizontal: 'right',
+      },
+    });
+    var valor = wb.createStyle({
+      numberFormat: '#,##0.00; (#,##.00); -',
+      font: {
+        bold: true,
+      },
+    });
+    var negrito = wb.createStyle({
+      font: {
+        bold: true,
+      },
+    });
+    const borda = wb.createStyle({
+    	border: {
+    		left: {
+    			style: 'thin',
+    			color: 'black',
+    		},
+    		right: {
+    			style: 'thin',
+    			color: 'black',
+    		},
+    		top: {
+    			style: 'thin',
+    			color: 'black',
+    		},
+    		bottom: {
+    			style: 'thin',
+    			color: 'black',
+    		},
+    		outline: false,
+    	},
+    });
 
-      ws.column(1).setWidth(45);
-      ws.column(2).setWidth(12);
-      ws.column(3).setWidth(12);
-      ws.column(4).setWidth(12);
+    ws.column(1).setWidth(45);
+    ws.column(2).setWidth(12);
+    ws.column(3).setWidth(12);
+    ws.column(4).setWidth(12);
 
-      ws.cell(1, 1).string(result1[0].representada + " Comissão à receber mês " + reformatMesAno(mesAno));
-      ws.cell(2, 1).string("PEDIDOS");
-      ws.cell(2, 4).string("com. 15%");
+    if (result1[0].representada == "Sulflex") {
+      auxRep = "Sulflex";
+      auxCom = 6;
+    }else if (result1[0].representada == "Portas Salete") {
+      auxRep = "Portas Salete";
+      auxCom = 5;
+    }else if (result1[0].representada == "Argamassas Argacel") {
+      auxRep = "Argamassas Argacel";
+      auxCom = 5;
+    }else if (result1[0].representada == "FIOCAB") {
+      auxRep = "FIOCAB";
+      auxCom = 5;
+    }else if (result1[0].representada == "Vassouras Esplanada") {
+      auxRep = "Vassouras Esplanada";
+      auxCom = 15;
+    }else if (result1[0].representada == "Reserva Ferramentas") {
+      auxRep = "Reserva Ferramentas";
+      auxCom = 6;
+    }
 
-      let linhaIndex = 3;
-      var comissao_total = 0
+    ws.cell(1, 1).string(auxRep + " Comissão à receber mês " + reformatMesAno(mesAno));
+    ws.cell(2, 1).string("PEDIDOS").style(negrito);
+    ws.cell(2, 4).string("com. "+auxCom+"%");
 
+    let linhaIndex = 3;
+    var comissao_total = 0
+
+    if (auxRep == "Sulflex" || auxRep == "Portas Salete" || auxRep == "Vassouras Esplanada") {
       result1.forEach(function(pedido){
-        if (result1[0].data.includes(mesAno)) {
+        if (pedido.data.includes(mesAno) && pedido.cidade != "Ponta Grossa") {
           ws.cell(linhaIndex, 1).string(pedido.empresa_nome);
           ws.cell(linhaIndex, 3).number(parseFloat(pedido.valor_total.replace(".", ""))).style(valor);
-          ws.cell(linhaIndex, 4).number(parseFloat(pedido.valor_total.replace(".", "")) * 0.15).style(valor);
-          comissao_total = comissao_total + (parseFloat(pedido.valor_total.replace(".", "")) * 0.15)
+          ws.cell(linhaIndex, 4).formula('=C'+linhaIndex+'*'+auxCom+"/100").style(valor);
+          comissao_total = comissao_total + (parseFloat(pedido.valor_total.replace(".", "")) * auxCom/100)
           linhaIndex++;
         }
       })
-      var linhaTotal = linhaIndex - 1
-      ws.cell(linhaIndex, 3).formula('SUM(C3:C'+ linhaTotal + ')').style(valor);
-      ws.cell(linhaIndex, 4).formula('SUM(D3:D'+ linhaTotal + ')').style(valor);
-      var bordaInferior = linhaIndex
 
-      linhaIndex+=2;
+      auxCom = auxCom/2;
+      ws.cell(linhaIndex++, 4).string("com. "+auxCom+"%");
+      result1.forEach(function(pedido){
+        if (pedido.data.includes(mesAno) && pedido.cidade == "Ponta Grossa") {
+          ws.cell(linhaIndex, 1).string(pedido.empresa_nome);
+          ws.cell(linhaIndex, 3).number(parseFloat(pedido.valor_total.replace(".", ""))).style(valor);
+          ws.cell(linhaIndex, 4).formula('=C'+linhaIndex+'*'+auxCom+"/100").style(valor);
+          comissao_total = comissao_total + (parseFloat(pedido.valor_total.replace(".", "")) * auxCom/100)
+          linhaIndex++;
+        }
+      })
+    }else if (auxRep == "Argamassas Argacel" || auxRep == "FIOCAB") {
+      result1.forEach(function(pedido){
+        if (pedido.data.includes(mesAno)) {
+          ws.cell(linhaIndex, 1).string(pedido.empresa_nome);
+          ws.cell(linhaIndex, 3).number(parseFloat(pedido.valor_total.replace(".", ""))).style(valor);
+          ws.cell(linhaIndex, 4).formula('=C'+linhaIndex+'*'+auxCom+"/100").style(valor);
+          comissao_total = comissao_total + (parseFloat(pedido.valor_total.replace(".", "")) * auxCom/100)
+          linhaIndex++;
+        }
+      })
+    }else if (auxRep == "Reserva Ferramentas") {
+      result1.forEach(function(pedido){
+        if (pedido.data.includes(mesAno) && pedido.cidade != "Ponta Grossa" && pedido.tipo == "Normal") {
+          ws.cell(linhaIndex, 1).string(pedido.empresa_nome);
+          ws.cell(linhaIndex, 3).number(parseFloat(pedido.valor_total.replace(".", ""))).style(valor);
+          ws.cell(linhaIndex, 4).formula('=C'+linhaIndex+'*'+auxCom+"/100").style(valor);
+          comissao_total = comissao_total + (parseFloat(pedido.valor_total.replace(".", "")) * auxCom/100)
+          linhaIndex++;
+        }
+      })
+      auxCom = 5;
+      ws.cell(linhaIndex++, 4).string("com. "+auxCom+"%");
+      result1.forEach(function(pedido){
+        if (pedido.data.includes(mesAno) && pedido.cidade == "Ponta Grossa" && pedido.tipo == "Normal") {
+          ws.cell(linhaIndex, 1).string(pedido.empresa_nome);
+          ws.cell(linhaIndex, 3).number(parseFloat(pedido.valor_total.replace(".", ""))).style(valor);
+          ws.cell(linhaIndex, 4).formula('=C'+linhaIndex+'*'+auxCom+"/100").style(valor);
+          comissao_total = comissao_total + (parseFloat(pedido.valor_total.replace(".", "")) * auxCom/100)
+          linhaIndex++;
+        }
+      })
+      auxCom = 3;
+      ws.cell(linhaIndex++, 4).string("com. "+auxCom+"%");
+      result1.forEach(function(pedido){
+        if (pedido.data.includes(mesAno) && pedido.cidade == "Ponta Grossa" && pedido.tipo == "Mesa") {
+          ws.cell(linhaIndex, 1).string(pedido.empresa_nome);
+          ws.cell(linhaIndex, 3).number(parseFloat(pedido.valor_total.replace(".", ""))).style(valor);
+          ws.cell(linhaIndex, 4).formula('=C'+linhaIndex+'*'+auxCom+"/100").style(valor);
+          comissao_total = comissao_total + (parseFloat(pedido.valor_total.replace(".", "")) * auxCom/100)
+          linhaIndex++;
+        }
+      })
+    }
 
-      ws.cell(linhaIndex, 1).string("Luiz Aristeu Galvão da Rocha");
-      ws.cell(linhaIndex++, 2).string("cpf-339.081.509-06");
-      ws.cell(linhaIndex++, 1).string("Banco do Brasil");
-      ws.cell(linhaIndex++, 1).string("Agência = 3172-0");
-      ws.cell(linhaIndex++, 1).string("Conta = 15413-X");
-      ws.cell(linhaIndex, 1).string("Valor");
-      ws.cell(linhaIndex, 2).formula("=D"+bordaInferior);
+
+    linhaIndex++
+    var linhaTotal = linhaIndex - 2
+    ws.cell(linhaIndex, 2).string("TOTAL").style(negrito);
+    ws.cell(linhaIndex, 3).formula('SUM(C3:C'+ linhaTotal + ')').style(valor);
+    ws.cell(linhaIndex, 4).formula('SUM(D3:D'+ linhaTotal + ')').style(valor);
+    var bordaInferior = linhaIndex
+
+    linhaIndex+=2;
+
+    ws.cell(linhaIndex, 1).string("Luiz Aristeu Galvão da Rocha");
+    ws.cell(linhaIndex++, 2).string("cpf-339.081.509-06");
+    ws.cell(linhaIndex++, 1).string("Banco do Brasil");
+    ws.cell(linhaIndex++, 1).string("Agência = 3172-0");
+    ws.cell(linhaIndex++, 1).string("Conta = 15413-X");
+    ws.cell(linhaIndex, 1).string("Valor");
+    ws.cell(linhaIndex, 2).formula("=D"+bordaInferior).style(valor);
 
 
-      ws.cell(1, 1, bordaInferior, 4).style(borda);
+    ws.cell(1, 1, bordaInferior, 4).style(borda);
 
-      var numero =  parseFloat(comissao_total);
-      var dinheiro = numero.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
-      var total = dinheiro.slice(3, dinheiro.lenght);
-      const nomeDoPedido = "Comissão " + result1[0].representada + " " + reformatMesAno(mesAno) + " " + total + ".xlsx";
-      wb.write(nomeDoPedido);
-      console.log('Arquivo local criado!');
+    var numero =  parseFloat(comissao_total);
+    var dinheiro = numero.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
+    var total = dinheiro.slice(3, dinheiro.lenght);
+    const nomeDoPedido = "Comissão " + result1[0].representada + " " + reformatMesAno(mesAno) + " " + total + ".xlsx";
+    wb.write(nomeDoPedido);
+    console.log('Arquivo local criado!');
 
-      // if (result1[0].representada == "Argamassas Argacel") {
-      //   myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1UZuNMijw1J5ByOVP3nZAcoGsKygqkKoD');
-      // }else if(result1[0].representada == "Portas Salete"){
-      //   myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1-bD4Zi3QrT7WQWuksphPCCvGPKh2HGv6');
-      // }else if(result1[0].representada == "FIOCAB"){
-      //   myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '19cJAyQT4WiRQT60XcRLHePMPLDQYzaUz');
-      // }else if(result1[0].representada == "Reserva Ferramentas"){
-      //   myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '18-MJWo22dyKqvKMAuN8XgCEmvq_nQBc6');
-      // }else if(result1[0].representada == "Sulflex"){
-      //   myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1EzAYx8PjyMBgzwrJhttDmwRCFQU8r92B');
-      // }else if(result1[0].representada == "Vassouras Esplanada"){
-      //   myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1UYC7hGp1OXNAU7FQqDMCEhv7ThiXmfz3');
-      // }
-      res.redirect('/pedido/listarPedidos')
-    })
+    // if (result1[0].representada == "Argamassas Argacel") {
+    //   myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1UZuNMijw1J5ByOVP3nZAcoGsKygqkKoD');
+    // }else if(result1[0].representada == "Portas Salete"){
+    //   myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1-bD4Zi3QrT7WQWuksphPCCvGPKh2HGv6');
+    // }else if(result1[0].representada == "FIOCAB"){
+    //   myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '19cJAyQT4WiRQT60XcRLHePMPLDQYzaUz');
+    // }else if(result1[0].representada == "Reserva Ferramentas"){
+    //   myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '18-MJWo22dyKqvKMAuN8XgCEmvq_nQBc6');
+    // }else if(result1[0].representada == "Sulflex"){
+    //   myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1EzAYx8PjyMBgzwrJhttDmwRCFQU8r92B');
+    // }else if(result1[0].representada == "Vassouras Esplanada"){
+    //   myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1UYC7hGp1OXNAU7FQqDMCEhv7ThiXmfz3');
+    // }
+    res.redirect('/pedido/listarPedidos')
   })
 });
 
@@ -1640,7 +1728,7 @@ app.post('/pedido/gerarRelatorioDeyse', (req, res) => {
       result1.forEach(function(pedido){
           if (pedido.data.includes(mesAno)) {
             if (pedido.usuario == "DEYSE" || pedido.cidade == "Ponta Grossa") {
-              if (pedido.representada == "Reserva Ferramentas") {
+              if (pedido.representada == "Reserva Ferramentas" && pedido.tipo == "Normal") {
                 auxRep = "Reserva Ferramentas";
                 auxCom = 5;
                 ws.cell(linhaIndex, 1).string(pedido.empresa_nome);
@@ -1661,14 +1749,13 @@ app.post('/pedido/gerarRelatorioDeyse', (req, res) => {
       linhaIndex++;
       linhaInicio = linhaIndex
 
-
       ws.cell(linhaIndex++, 3).string("com. 6%");
       result1.forEach(function(pedido){
           if (pedido.data.includes(mesAno)) {
             if (pedido.usuario == "DEYSE" || pedido.cidade == "Ponta Grossa") {
 
             }else{
-              if (pedido.representada == "Reserva Ferramentas") {
+              if (pedido.representada == "Reserva Ferramentas" && pedido.tipo == "Normal") {
                 auxRep = "Reserva Ferramentas";
                 auxCom = 6;
                 ws.cell(linhaIndex, 1).string(pedido.empresa_nome);
@@ -1679,6 +1766,28 @@ app.post('/pedido/gerarRelatorioDeyse', (req, res) => {
               }
             }
           }
+      })
+      var linhaTotal = linhaIndex - 1
+      ws.cell(linhaIndex, 2).formula('SUM(B'+ linhaInicio +':B'+ linhaTotal + ')').style(valor);
+      ws.cell(linhaIndex, 3).formula('SUM(C'+ linhaInicio +':C'+ linhaTotal + ')').style(valor);
+      ws.cell(linhaIndex, 4).formula('SUM(C'+ linhaInicio +':C'+ linhaTotal + ')').style(valor);
+      linhaIndex++;
+      linhaIndex++;
+      linhaInicio = linhaIndex
+
+      ws.cell(linhaIndex++, 3).string("com. 3%");
+      result1.forEach(function(pedido){
+        if (pedido.data.includes(mesAno)) {
+          if (pedido.representada == "Reserva Ferramentas" && pedido.tipo == "Mesa") {
+            auxRep = "Reserva Ferramentas";
+            auxCom = 3;
+            ws.cell(linhaIndex, 1).string(pedido.empresa_nome);
+            ws.cell(linhaIndex, 2).number(parseFloat(pedido.valor_total.replace(".", ""))).style(valor);
+            ws.cell(linhaIndex, 3).formula('=B'+linhaIndex+'*'+auxCom+"/100").style(valor);
+            comissao_reserva+= (parseFloat(pedido.valor_total.replace(".", "")) * auxCom / 100)
+            linhaIndex++;
+          }
+        }
       })
       var linhaTotal = linhaIndex - 1
       ws.cell(linhaIndex, 2).formula('SUM(B'+ linhaInicio +':B'+ linhaTotal + ')').style(valor);
