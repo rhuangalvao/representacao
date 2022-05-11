@@ -449,6 +449,64 @@ app.route('/artlustres/delete/:id')
   })
 })
 
+//Rotas do CRUD SULFLEX ----------------------------------------------------------
+//CREATE
+app.get('/tucano/create', (req, res) => {
+    res.render('tucano/create.ejs')
+})
+//SHOW
+app.get('/tucano/show', (req, res) => {
+    db.collection('tucano').find().toArray((err, results) => {
+        if (err) return console.log(err)
+        res.render('tucano/show.ejs', { data: results })
+    })
+})
+app.post('/tucano/show', (req, res) => {
+    db.collection('tucano').save(req.body, (err, result) => {
+        if (err) return console.log(err)
+        console.log('Salvo no Banco de Dados')
+        res.redirect('/tucano/show')
+    })
+})
+//EDIT
+app.route('/tucano/edit/:id')
+.get((req, res)=>{
+  var id = req.params.id
+  db.collection('tucano').find(ObjectId(id)).toArray((err, result) => {
+    if (err) return res.send(err)
+    res.render('tucano/edit.ejs', {data: result})
+  })
+})
+.post((req, res) =>{
+  var id = req.params.id
+  var codigo = req.body.codigo
+  var nome = req.body.nome
+  var valor = req.body.valor
+
+  db.collection('tucano').updateOne({_id: ObjectId(id)}, {
+    $set: {
+      codigo: codigo,
+      nome: nome,
+      valor: valor
+    }
+  },(err, result)=>{
+    if(err) return res.send(err)
+    res.redirect('/tucano/show')
+    console.log("Atualizado no banco de dados");
+  })
+
+})
+//DELETE
+app.route('/tucano/delete/:id')
+.get((req, res) =>{
+  var id = req.params.id
+  db.collection('tucano').deleteOne({_id: ObjectId(id)}, (err, result) => {
+    if(err) return res.send(500, err)
+    console.log('Deletado do Banco de dados');
+    res.redirect('/tucano/show')
+  })
+})
+
 //Rotas do CRUD VALOR PORTA ----------------------------------------------------------
 //CREATE
 app.get('/portas/valor/create', (req, res) => {
@@ -685,6 +743,8 @@ app.post('/pedido/salvarempresa', (req, res) => {
     res.redirect('/pedido/create/adicionarProdutoEsplanada/'+pedido)
   }else if (req.body.representada == "ArtLustres") {
     res.redirect('/pedido/create/adicionarProdutoArtLustres/'+pedido)
+  }else if (req.body.representada == "Tucano") {
+    res.redirect('/pedido/create/adicionarProdutoTucano/'+pedido)
   }
 });
 
@@ -740,6 +800,13 @@ app.get('/pedido/create/adicionarProdutoArtLustres/:id', (req, res) => {
         res.render('pedido/addProduto.ejs', { data1: results1, pedido_id: pedido_id })
   })
 })
+app.get('/pedido/create/adicionarProdutoTucano/:id', (req, res) => {
+  var pedido_id = req.params.id
+  db.collection('tucano').find().toArray((err, results1) => {
+      if (err) return console.log(err)
+        res.render('pedido/addProduto.ejs', { data1: results1, pedido_id: pedido_id })
+  })
+})
 
 app.post('/pedido/salvarproduto', (req, res) => {
   db.collection('produto').save(req.body, (err, result) => {
@@ -778,6 +845,8 @@ app.post('/pedido/salvarproduto', (req, res) => {
         res.redirect('/pedido/create/adicionarProdutoEsplanada/'+pedido)
       }else if (result1[0].representada == "ArtLustres") {
         res.redirect('/pedido/create/adicionarProdutoArtLustres/'+pedido)
+      }else if (result1[0].representada == "Tucano") {
+        res.redirect('/pedido/create/adicionarProdutoTucano/'+pedido)
       }
     })
   })
@@ -893,6 +962,8 @@ app.get('/pedido/mostrarLista/:id', (req, res) => {
             representadaAuxiliar = "esplanada"
           }else if (result1[0].representada == "ArtLustres") {
             representadaAuxiliar = "artlustres"
+          }else if (result1[0].representada == "Tucano") {
+            representadaAuxiliar = "tucano"
           }
           db.collection(representadaAuxiliar).find().toArray((err, argamassas) => {
             if (err) return res.send(err)
@@ -1145,6 +1216,34 @@ app.route('/produto/editProdutoArtLustres/:id')
       })
       console.log("Atualizado no banco de dados");
 })
+app.route('/produto/editProdutoTucano/:id')
+  .get((req, res)=>{
+    var id = req.params.id
+    db.collection('produto').find(ObjectId(id)).toArray((err, result) => {
+      if (err) return res.send(err)
+      pedido_id_edit = result[0].pedido_id
+      db.collection('tucano').find().toArray((err, results1) => {
+          if (err) return console.log(err)
+          res.render('pedido/editProduto.ejs', {data: result ,data1: results1 })
+      })
+    })
+  })
+  .post((req, res) =>{
+    var id = req.params.id
+    var quantidade = req.body.quantidade
+    var codigo = req.body.codigo
+
+    db.collection('produto').updateOne({_id: ObjectId(id)}, {
+      $set: {
+        quantidade: quantidade,
+        codigo: codigo,
+      }
+    },(err, result)=>{
+      if(err) return res.send(err)
+      res.redirect('/pedido/mostrarLista/'+pedido_id_edit)
+      })
+      console.log("Atualizado no banco de dados");
+})
 
 function deleteLocalFile (nomeDoPedido){
   fs.unlink(nomeDoPedido, function (err){
@@ -1323,7 +1422,7 @@ app.post('/pedido/gerarPlanilha', (req, res) => {
         	},
         });
 
-        ws.column(2).setWidth(15);
+        ws.column(1).setWidth(12);
         ws.column(2).setWidth(45);
         ws.column(3).setWidth(12);
         ws.column(4).setWidth(12);
@@ -1561,6 +1660,9 @@ app.post('/pedido/gerarRelatorio', (req, res) => {
     }else if (result1[0].representada == "ArtLustres") {
       auxRep = "ArtLustres";
       auxCom = 20;
+    }else if (result1[0].representada == "Tucano") {
+      auxRep = "Tucano";
+      auxCom = 5;
     }
 
     ws.cell(1, 1).string(auxRep + " Comissão à receber mês " + reformatMesAno(mesAno));
@@ -1570,7 +1672,7 @@ app.post('/pedido/gerarRelatorio', (req, res) => {
     let linhaIndex = 3;
     var comissao_total = 0
 
-    if (auxRep == "Sulflex" || auxRep == "Portas Salete" || auxRep == "Vassouras Esplanada" || auxRep == "ArtLustres") {
+    if (auxRep == "Sulflex" || auxRep == "Portas Salete" || auxRep == "Vassouras Esplanada" || auxRep == "ArtLustres" || auxRep == "Tucano") {
       result1.forEach(function(pedido){
         if (pedido.data.includes(mesAno) && pedido.cidade != "Ponta Grossa") {
           ws.cell(linhaIndex, 1).string(pedido.empresa_nome);
@@ -1646,13 +1748,13 @@ app.post('/pedido/gerarRelatorio', (req, res) => {
 
     linhaIndex+=2;
 
-    ws.cell(linhaIndex, 1).string("Luiz Aristeu Galvão da Rocha");
-    ws.cell(linhaIndex++, 2).string("cpf-339.081.509-06");
-    ws.cell(linhaIndex++, 1).string("Banco do Brasil");
-    ws.cell(linhaIndex++, 1).string("Agência = 3172-0");
-    ws.cell(linhaIndex++, 1).string("Conta = 15413-X");
-    ws.cell(linhaIndex, 1).string("Valor");
-    ws.cell(linhaIndex, 2).formula("=D"+bordaInferior).style(valor);
+    // ws.cell(linhaIndex, 1).string("Luiz Aristeu Galvão da Rocha");
+    // ws.cell(linhaIndex++, 2).string("cpf-339.081.509-06");
+    // ws.cell(linhaIndex++, 1).string("Banco do Brasil");
+    // ws.cell(linhaIndex++, 1).string("Agência = 3172-0");
+    // ws.cell(linhaIndex++, 1).string("Conta = 15413-X");
+    // ws.cell(linhaIndex, 1).string("Valor");
+    // ws.cell(linhaIndex, 2).formula("=D"+bordaInferior).style(valor);
 
 
     ws.cell(1, 1, bordaInferior, 4).style(borda);
@@ -1785,7 +1887,7 @@ app.post('/pedido/gerarRelatorioDeyse', (req, res) => {
       linhaInicio = linhaIndex
 
       ws.cell(linhaIndex, 1).string("Vassouras Esplanada").style(negrito);
-      ws.cell(linhaIndex++, 3).string("com. 7.5%");
+      ws.cell(linhaIndex++, 3).string("com. 7,5%");
       result1.forEach(function(pedido){
           if (pedido.data.includes(mesAno)) {
             if (pedido.usuario == "DEYSE" || pedido.cidade == "Ponta Grossa") {
@@ -1811,12 +1913,38 @@ app.post('/pedido/gerarRelatorioDeyse', (req, res) => {
       linhaInicio = linhaIndex
 
       ws.cell(linhaIndex, 1).string("Portas Salete").style(negrito);
-      ws.cell(linhaIndex++, 3).string("com. 2.5%");
+      ws.cell(linhaIndex++, 3).string("com. 2,5%");
       result1.forEach(function(pedido){
           if (pedido.data.includes(mesAno)) {
             if (pedido.usuario == "DEYSE" || pedido.cidade == "Ponta Grossa") {
               if (pedido.representada == "Portas Salete") {
                 auxRep = "Portas Salete";
+                auxCom = 2.5;
+                ws.cell(linhaIndex, 1).string(pedido.empresa_nome);
+                ws.cell(linhaIndex, 2).number(parseFloat(pedido.valor_total.replace(".", ""))).style(valor);
+                ws.cell(linhaIndex, 3).formula('=B'+linhaIndex+'*'+auxCom+"/100").style(valor);
+                comissao_total+= (parseFloat(pedido.valor_total.replace(".", "")) * auxCom / 100)
+                linhaIndex++;
+              }
+            }
+          }
+      })
+
+      var linhaTotal = linhaIndex - 1
+      ws.cell(linhaIndex, 2).formula('SUM(B'+ linhaInicio +':B'+ linhaTotal + ')').style(valor);
+      ws.cell(linhaIndex, 3).formula('SUM(C'+ linhaInicio +':C'+ linhaTotal + ')').style(valor);
+      ws.cell(linhaIndex, 4).formula('SUM(C'+ linhaInicio +':C'+ linhaTotal + ')').style(valor);
+      linhaIndex++;
+      linhaIndex++;
+      linhaInicio = linhaIndex
+
+      ws.cell(linhaIndex, 1).string("Tucano").style(negrito);
+      ws.cell(linhaIndex++, 3).string("com. 2,5%");
+      result1.forEach(function(pedido){
+          if (pedido.data.includes(mesAno)) {
+            if (pedido.usuario == "DEYSE" || pedido.cidade == "Ponta Grossa") {
+              if (pedido.representada == "Tucano") {
+                auxRep = "Tucano";
                 auxCom = 2.5;
                 ws.cell(linhaIndex, 1).string(pedido.empresa_nome);
                 ws.cell(linhaIndex, 2).number(parseFloat(pedido.valor_total.replace(".", ""))).style(valor);
@@ -1959,5 +2087,162 @@ app.post('/pedido/gerarRelatorioDeyse', (req, res) => {
       // myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1C2HS3uYLkPfBJOlyUJmO64XRQ94carT5');
 
       res.redirect('/pedido/listarPedidos')
+  })
+});
+
+
+app.post('/pedido/gerarPlanilhaComImposto', (req, res) => {
+  var id = req.body.pedido_id
+  db.collection('pedido').find(ObjectId(id)).toArray((err, result1) => {
+    if (err) return res.send(err)
+    var razaosocial_id = result1[0].razaosocial_id
+    db.collection('produto').find({pedido_id: id}).toArray((err, result2) => {
+      if (err) return res.send(err)
+      db.collection('empresa').find({_id: ObjectId(razaosocial_id)}).toArray((err, result3) => {
+        if (err) return res.send(err)
+        // CRIAR A PLANILHA
+        const wb = new xl.Workbook();
+
+        pedido_valor_total = 0
+        result2.forEach(function(produto){
+          pedido_valor_total = pedido_valor_total + parseFloat(produto.total)
+        })
+        result1.valor_total = pedido_valor_total.toFixed(2)
+
+        if (result1[0].representada == "Tucano") {
+          var options = {
+            headerFooter: {
+              evenHeader: '&24&PEDIDO TUCANO&24',
+              firstHeader: '&24PEDIDO TUCANO&24',
+              oddHeader: '&24PEDIDO TUCANO&24',
+            },
+            margins: {
+              left: 0.3,
+              right: 0.3,
+            },
+            printOptions: {
+              centerHorizontal: true,
+            },
+          };
+        }
+
+        const ws = wb.addWorksheet('Worksheet Name', options);
+
+        var colunaData = wb.createStyle({
+          alignment: {
+            horizontal: 'right',
+          },
+        });
+        var centralizado = wb.createStyle({
+          alignment: {
+            horizontal: 'center',
+          },
+        });
+        var valor = wb.createStyle({
+          numberFormat: '#,##0.00; (#,##.00); -',
+          font: {
+            bold: true,
+          },
+        });
+        var negrito = wb.createStyle({
+          font: {
+            bold: true,
+          },
+        });
+        const borda = wb.createStyle({
+        	border: {
+        		left: {
+        			style: 'thin',
+        			color: 'black',
+        		},
+        		right: {
+        			style: 'thin',
+        			color: 'black',
+        		},
+        		top: {
+        			style: 'thin',
+        			color: 'black',
+        		},
+        		bottom: {
+        			style: 'thin',
+        			color: 'black',
+        		},
+        		outline: false,
+        	},
+        });
+
+        ws.column(1).setWidth(8);
+        ws.column(2).setWidth(8);
+        ws.column(3).setWidth(36);
+        ws.column(4).setWidth(8);
+        ws.column(5).setWidth(8);
+        ws.column(6).setWidth(12);
+
+        ws.cell(1, 1).string(result3[0].razaosocial);
+        ws.cell(2, 1).string(result3[0].endereco + ", " + result3[0].numero + " - "+result3[0].bairro + " - "+result3[0].cidade + "- PR");
+        ws.cell(3, 1).string(result3[0].cnpj + " " + result3[0].ie);
+        ws.cell(4, 1).string("EMAIL");
+        ws.cell(4, 3).string(result3[0].email);
+        ws.cell(1, 6).date(result1[0].data).style({numberFormat: 'dd/mm/yyyy'}).style(colunaData);
+        ws.cell(2, 6).string(result3[0].cep).style(colunaData);
+        ws.cell(3, 6).string(result3[0].telefone).style(colunaData);
+        ws.cell(4, 6).string(result3[0].comprador).style(colunaData);
+        ws.cell(5, 3).string(req.body.prazo + "  " + req.body.formadepagamento);
+        ws.cell(5, 5).string("c/frete").style(centralizado);
+        ws.cell(5, 5).string("11,94%").style(centralizado);
+        ws.cell(5, 6).string("Total").style(centralizado);
+        ws.cell(6, 1).string("Código");
+        ws.cell(5, 2).string("mts.");
+        ws.cell(6, 2).string("embal");
+        ws.cell(6, 3).string("Descrição").style(centralizado);
+        ws.cell(6, 4).string("un. mt").style(centralizado);
+        ws.cell(6, 5).string("C/ST").style(centralizado);
+        ws.cell(6, 6).string("com ST final").style(centralizado);
+
+        let linhaIndex = 7;
+
+        result2.forEach(function(produto){
+          ws.cell(linhaIndex, 1).string(produto.codigo).style(centralizado);
+          ws.cell(linhaIndex, 2).number(parseFloat(produto.quantidade)).style(centralizado);
+          ws.cell(linhaIndex, 3).string(produto.nome);
+          ws.cell(linhaIndex, 4).number(parseFloat(produto.total)/parseFloat(produto.quantidade)).style(valor);
+          if (produto.codigo == "219" || produto.codigo == "222" || produto.codigo == "224") {
+            ws.cell(linhaIndex, 6).formula('D'+linhaIndex + ' * B'+linhaIndex).style(valor);
+          }else {
+            ws.cell(linhaIndex, 5).formula('D'+linhaIndex + ' * 1.1194').style(valor);
+            ws.cell(linhaIndex, 6).formula('E'+linhaIndex + ' * B'+linhaIndex).style(valor);
+          }
+          linhaIndex++;
+        })
+        ws.cell(linhaIndex, 6).formula('SUM(F7:F'+ --linhaIndex + ')').style(valor);
+
+        linhaIndex = linhaIndex +3;
+
+        if (result1[0].usuario == "GALVÃO") {
+          ws.cell(linhaIndex++, 3).string("GALVÃO").style(negrito);
+          ws.cell(linhaIndex++, 3).string("42-99827-8677").style(negrito);
+          ws.cell(linhaIndex++, 3).string("galvaoluiz3@gmail.com");
+        }else if(result1[0].usuario == "DEYSE"){
+          ws.cell(linhaIndex++, 3).string("DEYSE").style(negrito);
+          ws.cell(linhaIndex++, 3).string("42-99987-1298").style(negrito);
+          ws.cell(linhaIndex++, 3).string("deysekarine@hotmail.com");
+        }
+
+        ws.cell(1, 1, linhaIndex, 6).style(borda);
+
+        var numero =  parseFloat(result1.valor_total);
+        var dinheiro = numero.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
+        var total = dinheiro.slice(3, dinheiro.lenght);
+        const nomeDoPedido = "Pedido " + result3[0].nomefantasia + " " + reformatDate(result1[0].data) + " " + total + ".xlsx";
+        wb.write(nomeDoPedido);
+        console.log('Arquivo local criado!');
+
+        // myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1ja984V25nMX0937K3PrBF2BfFAMyuKhJ');
+
+        db.collection('prazo').find().toArray((err, prazo) => {
+          res.redirect('/pedido/mostrarLista/'+id)
+        })
+      })
+    })
   })
 });

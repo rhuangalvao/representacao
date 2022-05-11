@@ -110,6 +110,9 @@
                 <td><a href="/produto/editProdutoEsplanada/<%= details._id %>">Editar</a> - <a href="/produto/delete/<%= details._id %>">Deletar</a></td>
                 <% }else if(pedido[0].representada == "ArtLustres"){ %>
                 <td><a href="/produto/editProdutoArtLustres/<%= details._id %>">Editar</a> - <a href="/produto/delete/<%= details._id %>">Deletar</a></td>
+                <% }else if(pedido[0].representada == "Tucano"){ %>
+                <td><a href="/produto/editProdutoTucano/<%= details._id %>">Editar</a> - <a href="/produto/delete/<%= details._id %>">Deletar</a></td>
+
                 <% } %>
             </tr>
         <% }) %>
@@ -135,10 +138,17 @@
         <a class="btn btn-primary " href="/pedido/create/adicionarProdutoEsplanada/<%= pedido[0]._id %>">Adicionar Produto</a>
       <% }else if(pedido[0].representada == "ArtLustres"){ %>
         <a class="btn btn-primary " href="/pedido/create/adicionarProdutoArtLustres/<%= pedido[0]._id %>">Adicionar Produto</a>
+      <% }else if(pedido[0].representada == "Tucano"){ %>
+        <a class="btn btn-primary " href="/pedido/create/adicionarProdutoTucano/<%= pedido[0]._id %>">Adicionar Produto</a>
+
       <% } %>
     </div>
     <div class="col-sm">
+      <% if(pedido[0].representada == "Tucano"){ %>
+      <form action="/pedido/gerarPlanilhaComImposto" method="POST">
+      <% }else{ %>
       <form action="/pedido/gerarPlanilha" method="POST">
+      <% } %>
           <label>Prazo</label>
           <select class="form-control" name="prazo" style="width: 250px">
             <% if(parseInt(pedido.valor_total) > 2000 ) { %>
