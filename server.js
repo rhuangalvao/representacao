@@ -391,6 +391,64 @@ app.route('/esplanada/delete/:id')
   })
 })
 
+//Rotas do CRUD ARTLUSTRES ----------------------------------------------------------
+//CREATE
+app.get('/artlustres/create', (req, res) => {
+    res.render('artlustres/create.ejs')
+})
+//SHOW
+app.get('/artlustres/show', (req, res) => {
+    db.collection('artlustres').find().toArray((err, results) => {
+        if (err) return console.log(err)
+        res.render('artlustres/show.ejs', { data: results })
+    })
+})
+app.post('/artlustres/show', (req, res) => {
+    db.collection('artlustres').save(req.body, (err, result) => {
+        if (err) return console.log(err)
+        console.log('Salvo no Banco de Dados')
+        res.redirect('/artlustres/show')
+    })
+})
+//EDIT
+app.route('/artlustres/edit/:id')
+.get((req, res)=>{
+  var id = req.params.id
+  db.collection('artlustres').find(ObjectId(id)).toArray((err, result) => {
+    if (err) return res.send(err)
+    res.render('artlustres/edit.ejs', {data: result})
+  })
+})
+.post((req, res) =>{
+  var id = req.params.id
+  var codigo = req.body.codigo
+  var nome = req.body.nome
+  var valor = req.body.valor
+
+  db.collection('artlustres').updateOne({_id: ObjectId(id)}, {
+    $set: {
+      codigo: codigo,
+      nome: nome,
+      valor: valor
+    }
+  },(err, result)=>{
+    if(err) return res.send(err)
+    res.redirect('/artlustres/show')
+    console.log("Atualizado no banco de dados");
+  })
+
+})
+//DELETE
+app.route('/artlustres/delete/:id')
+.get((req, res) =>{
+  var id = req.params.id
+  db.collection('artlustres').deleteOne({_id: ObjectId(id)}, (err, result) => {
+    if(err) return res.send(500, err)
+    console.log('Deletado do Banco de dados');
+    res.redirect('/artlustres/show')
+  })
+})
+
 //Rotas do CRUD VALOR PORTA ----------------------------------------------------------
 //CREATE
 app.get('/portas/valor/create', (req, res) => {
@@ -625,6 +683,8 @@ app.post('/pedido/salvarempresa', (req, res) => {
     res.redirect('/pedido/create/adicionarProdutoSulflex/'+pedido)
   }else if (req.body.representada == "Vassouras Esplanada") {
     res.redirect('/pedido/create/adicionarProdutoEsplanada/'+pedido)
+  }else if (req.body.representada == "ArtLustres") {
+    res.redirect('/pedido/create/adicionarProdutoArtLustres/'+pedido)
   }
 });
 
@@ -673,6 +733,13 @@ app.get('/pedido/create/adicionarProdutoEsplanada/:id', (req, res) => {
         res.render('pedido/addProduto.ejs', { data1: results1, pedido_id: pedido_id })
   })
 })
+app.get('/pedido/create/adicionarProdutoArtLustres/:id', (req, res) => {
+  var pedido_id = req.params.id
+  db.collection('artlustres').find().toArray((err, results1) => {
+      if (err) return console.log(err)
+        res.render('pedido/addProduto.ejs', { data1: results1, pedido_id: pedido_id })
+  })
+})
 
 app.post('/pedido/salvarproduto', (req, res) => {
   db.collection('produto').save(req.body, (err, result) => {
@@ -709,6 +776,8 @@ app.post('/pedido/salvarproduto', (req, res) => {
         res.redirect('/pedido/create/adicionarProdutoSulflex/'+pedido)
       }else if (result1[0].representada == "Vassouras Esplanada") {
         res.redirect('/pedido/create/adicionarProdutoEsplanada/'+pedido)
+      }else if (result1[0].representada == "ArtLustres") {
+        res.redirect('/pedido/create/adicionarProdutoArtLustres/'+pedido)
       }
     })
   })
@@ -822,6 +891,8 @@ app.get('/pedido/mostrarLista/:id', (req, res) => {
             representadaAuxiliar = "sulflex"
           }else if (result1[0].representada == "Vassouras Esplanada") {
             representadaAuxiliar = "esplanada"
+          }else if (result1[0].representada == "ArtLustres") {
+            representadaAuxiliar = "artlustres"
           }
           db.collection(representadaAuxiliar).find().toArray((err, argamassas) => {
             if (err) return res.send(err)
@@ -1046,6 +1117,35 @@ app.route('/produto/editProdutoEsplanada/:id')
       console.log("Atualizado no banco de dados");
 })
 
+app.route('/produto/editProdutoArtLustres/:id')
+  .get((req, res)=>{
+    var id = req.params.id
+    db.collection('produto').find(ObjectId(id)).toArray((err, result) => {
+      if (err) return res.send(err)
+      pedido_id_edit = result[0].pedido_id
+      db.collection('artlustres').find().toArray((err, results1) => {
+          if (err) return console.log(err)
+          res.render('pedido/editProduto.ejs', {data: result ,data1: results1 })
+      })
+    })
+  })
+  .post((req, res) =>{
+    var id = req.params.id
+    var quantidade = req.body.quantidade
+    var codigo = req.body.codigo
+
+    db.collection('produto').updateOne({_id: ObjectId(id)}, {
+      $set: {
+        quantidade: quantidade,
+        codigo: codigo,
+      }
+    },(err, result)=>{
+      if(err) return res.send(err)
+      res.redirect('/pedido/mostrarLista/'+pedido_id_edit)
+      })
+      console.log("Atualizado no banco de dados");
+})
+
 function deleteLocalFile (nomeDoPedido){
   fs.unlink(nomeDoPedido, function (err){
     if (err) throw err;
@@ -1152,6 +1252,21 @@ app.post('/pedido/gerarPlanilha', (req, res) => {
               evenHeader: '&24&PEDIDO VASSOURAS ESPLANADA&24',
               firstHeader: '&24PEDIDO VASSOURAS ESPLANADA&24',
               oddHeader: '&24PEDIDO VASSOURAS ESPLANADA&24',
+            },
+            margins: {
+              left: 0.3,
+              right: 0.3,
+            },
+            printOptions: {
+              centerHorizontal: true,
+            },
+          };
+        }else if(result1[0].representada == "ArtLustres"){
+          var options = {
+            headerFooter: {
+              evenHeader: '&24&PEDIDO ART LUSTRES&24',
+              firstHeader: '&24PEDIDO ART LUSTRES&24',
+              oddHeader: '&24PEDIDO ART LUSTRES&24',
             },
             margins: {
               left: 0.3,
@@ -1298,6 +1413,8 @@ app.post('/pedido/gerarPlanilha', (req, res) => {
           myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1EzAYx8PjyMBgzwrJhttDmwRCFQU8r92B');
         }else if(result1[0].representada == "Vassouras Esplanada"){
           myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1UYC7hGp1OXNAU7FQqDMCEhv7ThiXmfz3');
+        }else if(result1[0].representada == "ArtLustres"){
+          myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1QIdorOQlhNgD4X_s9c-aBNzk5YTFgxDD');
         }
         db.collection('prazo').find().toArray((err, prazo) => {
           res.redirect('/pedido/mostrarLista/'+id)
@@ -1431,16 +1548,19 @@ app.post('/pedido/gerarRelatorio', (req, res) => {
       auxCom = 5;
     }else if (result1[0].representada == "Argamassas Argacel") {
       auxRep = "Argamassas Argacel";
-      auxCom = 5;
+      auxCom = 4;
     }else if (result1[0].representada == "FIOCAB") {
       auxRep = "FIOCAB";
-      auxCom = 5;
+      auxCom = 3;
     }else if (result1[0].representada == "Vassouras Esplanada") {
       auxRep = "Vassouras Esplanada";
       auxCom = 15;
     }else if (result1[0].representada == "Reserva Ferramentas") {
       auxRep = "Reserva Ferramentas";
       auxCom = 6;
+    }else if (result1[0].representada == "ArtLustres") {
+      auxRep = "ArtLustres";
+      auxCom = 20;
     }
 
     ws.cell(1, 1).string(auxRep + " Comissão à receber mês " + reformatMesAno(mesAno));
@@ -1450,7 +1570,7 @@ app.post('/pedido/gerarRelatorio', (req, res) => {
     let linhaIndex = 3;
     var comissao_total = 0
 
-    if (auxRep == "Sulflex" || auxRep == "Portas Salete" || auxRep == "Vassouras Esplanada") {
+    if (auxRep == "Sulflex" || auxRep == "Portas Salete" || auxRep == "Vassouras Esplanada" || auxRep == "ArtLustres") {
       result1.forEach(function(pedido){
         if (pedido.data.includes(mesAno) && pedido.cidade != "Ponta Grossa") {
           ws.cell(linhaIndex, 1).string(pedido.empresa_nome);
@@ -1635,7 +1755,7 @@ app.post('/pedido/gerarRelatorioDeyse', (req, res) => {
       var comissao_total = 0
       var auxRep = ""
       var auxCom = 0
-      var linhaInicio = 4
+      var linhaInicio = 3
 
       ws.cell(linhaIndex, 1).string("Sulflex").style(negrito);
       ws.cell(linhaIndex++, 3).string("com. 3%");
@@ -1716,8 +1836,34 @@ app.post('/pedido/gerarRelatorioDeyse', (req, res) => {
       linhaIndex++;
       linhaInicio = linhaIndex
 
+      ws.cell(linhaIndex, 1).string("ArtLustres").style(negrito);
+      ws.cell(linhaIndex++, 3).string("com. 10%");
+      result1.forEach(function(pedido){
+          if (pedido.data.includes(mesAno)) {
+            if (pedido.usuario == "DEYSE" || pedido.cidade == "Ponta Grossa") {
+              if (pedido.representada == "ArtLustres") {
+                auxRep = "ArtLustres";
+                auxCom = 10;
+                ws.cell(linhaIndex, 1).string(pedido.empresa_nome);
+                ws.cell(linhaIndex, 2).number(parseFloat(pedido.valor_total.replace(".", ""))).style(valor);
+                ws.cell(linhaIndex, 3).formula('=B'+linhaIndex+'*'+auxCom+"/100").style(valor);
+                comissao_total+= (parseFloat(pedido.valor_total.replace(".", "")) * auxCom / 100)
+                linhaIndex++;
+              }
+            }
+          }
+      })
+
+      var linhaTotal = linhaIndex - 1
+      ws.cell(linhaIndex, 2).formula('SUM(B'+ linhaInicio +':B'+ linhaTotal + ')').style(valor);
+      ws.cell(linhaIndex, 3).formula('SUM(C'+ linhaInicio +':C'+ linhaTotal + ')').style(valor);
+      ws.cell(linhaIndex, 4).formula('SUM(C'+ linhaInicio +':C'+ linhaTotal + ')').style(valor);
+      linhaIndex++;
+      linhaIndex++;
+      linhaInicio = linhaIndex
+
       ws.cell(linhaIndex, 1).string("SOMA").style(negrito);
-      ws.cell(linhaIndex, 4).number(comissao_total).style(negrito);
+      ws.cell(linhaIndex, 4).number(comissao_total).style(negrito).style(valor);;
 
       linhaIndex++;
       linhaIndex++;
@@ -1798,7 +1944,7 @@ app.post('/pedido/gerarRelatorioDeyse', (req, res) => {
       linhaInicio = linhaIndex
 
       ws.cell(linhaIndex, 1).string("TOTAL").style(negrito);
-      ws.cell(linhaIndex, 4).number(comissao_total - comissao_reserva).style(negrito);
+      ws.cell(linhaIndex, 4).number(comissao_total - comissao_reserva).style(negrito).style(valor);;
       ws.cell(linhaIndex, 5).number(439.03).style(valor);
       ws.cell(linhaIndex, 6).formula("=D"+linhaIndex+"-E"+linhaIndex).style(negrito);
 

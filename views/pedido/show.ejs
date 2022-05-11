@@ -79,7 +79,7 @@
       </tbody>
     </table>
 
-    <!-- SE FOR ARGACEL -->
+    <!-- SE FOR OUTRO -->
   <% }else { %>
     <table class="table table-sm table-bordered table-striped table-hover">
       <thead>
@@ -108,6 +108,8 @@
                 <td><a href="/produto/editProdutoSulflex/<%= details._id %>">Editar</a> - <a href="/produto/delete/<%= details._id %>">Deletar</a></td>
                 <% }else if(pedido[0].representada == "Vassouras Esplanada"){ %>
                 <td><a href="/produto/editProdutoEsplanada/<%= details._id %>">Editar</a> - <a href="/produto/delete/<%= details._id %>">Deletar</a></td>
+                <% }else if(pedido[0].representada == "ArtLustres"){ %>
+                <td><a href="/produto/editProdutoArtLustres/<%= details._id %>">Editar</a> - <a href="/produto/delete/<%= details._id %>">Deletar</a></td>
                 <% } %>
             </tr>
         <% }) %>
@@ -131,6 +133,8 @@
         <a class="btn btn-primary " href="/pedido/create/adicionarProdutoSulflex/<%= pedido[0]._id %>">Adicionar Produto</a>
       <% }else if(pedido[0].representada == "Vassouras Esplanada"){ %>
         <a class="btn btn-primary " href="/pedido/create/adicionarProdutoEsplanada/<%= pedido[0]._id %>">Adicionar Produto</a>
+      <% }else if(pedido[0].representada == "ArtLustres"){ %>
+        <a class="btn btn-primary " href="/pedido/create/adicionarProdutoArtLustres/<%= pedido[0]._id %>">Adicionar Produto</a>
       <% } %>
     </div>
     <div class="col-sm">
