@@ -5,7 +5,7 @@
   <title>Empresas</title>
 </head>
 <body>
-  <div class="container">
+  <div class="container-fluid">
   <h2><a class="mt-1" href="/">Início</a></h2>
   <h2>Empresas</h2>
     <a class="btn btn-primary mb-1" href="/empresa/create" role="button">Adicionar empresa</a>
@@ -68,6 +68,7 @@
 
   var dataTableInit = function(){
     dataTable = $('table').dataTable({
+      "pageLength": 25
     });
   };
 

@@ -6,7 +6,7 @@
   <title>Pedidos</title>
 </head>
 <body>
-  <div class="container">
+  <div class="container-fluid">
     <h2><a class="mt-1" href="/">Início</a></h2>
     <h2>Pedidos</h2>
     <a class="btn btn-primary mb-1" href="/pedido/create" role="button">Adicionar pedido</a>
@@ -20,19 +20,21 @@
               <th scope="col">Representada</th>
               <th scope="col">Razão Social</th>
               <th scope="col">Nome Fantasia</th>
+              <th scope="col">Cidade</th>
               <th scope="col">Data</th>
               <th scope="col">Valor</th>
               <th scope="col">Ações</th>
             </tr>
           </thead>
           <tbody>
+            <% function reformatDate(dateStr){dArr = dateStr.split("-");return dArr[2]+ "/" +dArr[1]+ "/" +dArr[0];} %>
             <% pedidos.forEach(function(pedido) { %>
                 <tr>
                   <td><%= pedido.representada %></td>
                   <td><%= pedido.empresa_nome %></td>
                   <td><%= pedido.empresa_nome_fantasia %></td>
-                  <% function reformatDate(dateStr){dArr = dateStr.split("-");return dArr[2]+ "/" +dArr[1]+ "/" +dArr[0];} %>
-                  <td><%= reformatDate(pedido.data) %></td>
+                  <td><%= pedido.cidade %></td>
+                  <td><%= pedido.data %></td>
                   <td><%= pedido.valor_total %></td>
                   <td><a href="/pedido/mostrarLista/<%= pedido._id %>">Mostrar</a> - <a href="/pedido/delete/<%= pedido._id %>">Deletar</a></td>
                 </tr>
@@ -58,6 +60,7 @@
 
   var dataTableInit = function(){
     dataTable = $('table').dataTable({
+      "pageLength": 25
     });
   };
 

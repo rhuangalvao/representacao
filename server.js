@@ -20,7 +20,11 @@ MongoClient.connect(uri, (err, client) => {
 app.set('view engine', 'ejs')
 
 app.get('/', (req, res) =>{
-  res.render('index.ejs')
+  db.collection('visita').find().toArray((err, results) => {
+      if (err) return console.log(err)
+      res.render('index.ejs', { visita: results })
+  })
+  // res.render('index.ejs')
 })
 app.get('/', (req, res) => {
     var cursor = db.collection('data').find()
@@ -423,12 +427,14 @@ app.route('/artlustres/edit/:id')
   var id = req.params.id
   var codigo = req.body.codigo
   var nome = req.body.nome
+  var estoque = req.body.estoque
   var valor = req.body.valor
 
   db.collection('artlustres').updateOne({_id: ObjectId(id)}, {
     $set: {
       codigo: codigo,
       nome: nome,
+      estoque: estoque,
       valor: valor
     }
   },(err, result)=>{
@@ -689,6 +695,22 @@ app.route('/empresa/delete/:id')
   })
 })
 
+
+// SALVAR VISITAS DE CIDADE
+//CREATE
+app.get('/cidade/visita', (req, res) => {
+    db.collection('cidade').find().toArray((err, results) => {
+        if (err) return console.log(err)
+          res.render('visita/create.ejs', { cidade: results })
+    })
+})
+
+app.post('/cidade/salvarvisita', (req, res) => {
+  db.collection('visita').save(req.body, (err, result) => {
+    if (err) return console.log(err)
+    res.redirect('/cidade/visita')
+  })
+});
 
 //Rotas do CRUD PEDIDO --------------------------------------------------------
 //SHOW
@@ -1273,9 +1295,9 @@ app.post('/pedido/gerarPlanilha', (req, res) => {
         if (result1[0].representada == "Argamassas Argacel") {
           var options = {
             headerFooter: {
-              evenHeader: '&24&PEDIDO ARGAMASSAS ARGACEL&24',
-              firstHeader: '&24PEDIDO ARGAMASSAS ARGACEL&24',
-              oddHeader: '&24PEDIDO ARGAMASSAS ARGACEL&24',
+              evenHeader: '&24&PEDIDO ARGACEL&24',
+              firstHeader: '&24PEDIDO ARGACEL&24',
+              oddHeader: '&24PEDIDO ARGACEL&24',
             },
             margins: {
               left: 0.3,
@@ -1429,7 +1451,7 @@ app.post('/pedido/gerarPlanilha', (req, res) => {
 
         ws.cell(1, 1).string(result3[0].razaosocial);
         ws.cell(2, 1).string(result3[0].endereco + ", " + result3[0].numero + " - "+result3[0].bairro + " - "+result3[0].cidade + "- PR");
-        ws.cell(3, 1).string(result3[0].cnpj + " " + result3[0].ie);
+        ws.cell(3, 1).string(result3[0].cnpj + "      " + result3[0].ie);
         ws.cell(4, 1).string("EMAIL");
         ws.cell(4, 2).string(result3[0].email);
         ws.cell(1, 4).date(result1[0].data).style({numberFormat: 'dd/mm/yyyy'}).style(colunaData);
@@ -1449,6 +1471,8 @@ app.post('/pedido/gerarPlanilha', (req, res) => {
             ws.cell(linhaIndex, 1).number(parseFloat(produto.quantidade)).style(centralizado);
             if(produto.codigo.includes("M") || produto.codigo.includes("V")){
               ws.cell(linhaIndex, 2).string(produto.nome);
+            }else if(produto.codigo.includes("01P")){
+              ws.cell(linhaIndex, 2).string("PORTA 01 " + produto.tamanho + " CM " + produto.nome );
             }else {
               ws.cell(linhaIndex, 2).string("PORTA " + produto.codigo + " " + produto.tamanho + " CM " + produto.nome );
             }
@@ -1748,15 +1772,6 @@ app.post('/pedido/gerarRelatorio', (req, res) => {
 
     linhaIndex+=2;
 
-    // ws.cell(linhaIndex, 1).string("Luiz Aristeu Galvão da Rocha");
-    // ws.cell(linhaIndex++, 2).string("cpf-339.081.509-06");
-    // ws.cell(linhaIndex++, 1).string("Banco do Brasil");
-    // ws.cell(linhaIndex++, 1).string("Agência = 3172-0");
-    // ws.cell(linhaIndex++, 1).string("Conta = 15413-X");
-    // ws.cell(linhaIndex, 1).string("Valor");
-    // ws.cell(linhaIndex, 2).formula("=D"+bordaInferior).style(valor);
-
-
     ws.cell(1, 1, bordaInferior, 4).style(borda);
 
     var numero =  parseFloat(comissao_total);
@@ -1766,19 +1781,8 @@ app.post('/pedido/gerarRelatorio', (req, res) => {
     wb.write(nomeDoPedido);
     console.log('Arquivo local criado!');
 
-    // if (result1[0].representada == "Argamassas Argacel") {
-    //   myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1UZuNMijw1J5ByOVP3nZAcoGsKygqkKoD');
-    // }else if(result1[0].representada == "Portas Salete"){
-    //   myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1-bD4Zi3QrT7WQWuksphPCCvGPKh2HGv6');
-    // }else if(result1[0].representada == "FIOCAB"){
-    //   myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '19cJAyQT4WiRQT60XcRLHePMPLDQYzaUz');
-    // }else if(result1[0].representada == "Reserva Ferramentas"){
-    //   myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '18-MJWo22dyKqvKMAuN8XgCEmvq_nQBc6');
-    // }else if(result1[0].representada == "Sulflex"){
-    //   myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1EzAYx8PjyMBgzwrJhttDmwRCFQU8r92B');
-    // }else if(result1[0].representada == "Vassouras Esplanada"){
-    //   myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1UYC7hGp1OXNAU7FQqDMCEhv7ThiXmfz3');
-    // }
+    myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1_HLuAswtxTrLXpi6cRp1Hhfki6aoccBY');
+
     res.redirect('/pedido/listarPedidos')
   })
 });
@@ -1861,10 +1865,13 @@ app.post('/pedido/gerarRelatorioDeyse', (req, res) => {
 
       ws.cell(linhaIndex, 1).string("Sulflex").style(negrito);
       ws.cell(linhaIndex++, 3).string("com. 3%");
+      auxCom = 3;
+      ws.cell(linhaIndex, 3).formula('=B'+linhaIndex+'*'+auxCom+"/100").style(valor);
+      linhaIndex++;
 
       result1.forEach(function(pedido){
           if (pedido.data.includes(mesAno)) {
-            if (pedido.usuario == "DEYSE" || pedido.cidade == "Ponta Grossa") {
+            if (pedido.usuario == "DEYSE" || pedido.cidade === "Ponta Grossa") {
               if (pedido.representada == "Sulflex") {
                 auxRep = "Sulflex";
                 auxCom = 3;
@@ -1888,9 +1895,13 @@ app.post('/pedido/gerarRelatorioDeyse', (req, res) => {
 
       ws.cell(linhaIndex, 1).string("Vassouras Esplanada").style(negrito);
       ws.cell(linhaIndex++, 3).string("com. 7,5%");
+      auxCom = 7.5;
+      ws.cell(linhaIndex, 3).formula('=B'+linhaIndex+'*'+auxCom+"/100").style(valor);
+      linhaIndex++;
+
       result1.forEach(function(pedido){
           if (pedido.data.includes(mesAno)) {
-            if (pedido.usuario == "DEYSE" || pedido.cidade == "Ponta Grossa") {
+            if (pedido.usuario == "DEYSE" || pedido.cidade === "Ponta Grossa") {
               if (pedido.representada == "Vassouras Esplanada") {
                 auxRep = "Vassouras Esplanada";
                 auxCom = 7.5;
@@ -1914,9 +1925,13 @@ app.post('/pedido/gerarRelatorioDeyse', (req, res) => {
 
       ws.cell(linhaIndex, 1).string("Portas Salete").style(negrito);
       ws.cell(linhaIndex++, 3).string("com. 2,5%");
+      auxCom = 2.5;
+      ws.cell(linhaIndex, 3).formula('=B'+linhaIndex+'*'+auxCom+"/100").style(valor);
+      linhaIndex++;
+
       result1.forEach(function(pedido){
           if (pedido.data.includes(mesAno)) {
-            if (pedido.usuario == "DEYSE" || pedido.cidade == "Ponta Grossa") {
+            if (pedido.usuario == "DEYSE" || pedido.cidade === "Ponta Grossa") {
               if (pedido.representada == "Portas Salete") {
                 auxRep = "Portas Salete";
                 auxCom = 2.5;
@@ -1940,9 +1955,13 @@ app.post('/pedido/gerarRelatorioDeyse', (req, res) => {
 
       ws.cell(linhaIndex, 1).string("Tucano").style(negrito);
       ws.cell(linhaIndex++, 3).string("com. 2,5%");
+      auxCom = 2.5;
+      ws.cell(linhaIndex, 3).formula('=B'+linhaIndex+'*'+auxCom+"/100").style(valor);
+      linhaIndex++;
+
       result1.forEach(function(pedido){
           if (pedido.data.includes(mesAno)) {
-            if (pedido.usuario == "DEYSE" || pedido.cidade == "Ponta Grossa") {
+            if (pedido.usuario == "DEYSE" || pedido.cidade === "Ponta Grossa") {
               if (pedido.representada == "Tucano") {
                 auxRep = "Tucano";
                 auxCom = 2.5;
@@ -1966,9 +1985,13 @@ app.post('/pedido/gerarRelatorioDeyse', (req, res) => {
 
       ws.cell(linhaIndex, 1).string("ArtLustres").style(negrito);
       ws.cell(linhaIndex++, 3).string("com. 10%");
+      auxCom = 10;
+      ws.cell(linhaIndex, 3).formula('=B'+linhaIndex+'*'+auxCom+"/100").style(valor);
+      linhaIndex++;
+
       result1.forEach(function(pedido){
           if (pedido.data.includes(mesAno)) {
-            if (pedido.usuario == "DEYSE" || pedido.cidade == "Ponta Grossa") {
+            if (pedido.usuario == "DEYSE" || pedido.cidade === "Ponta Grossa") {
               if (pedido.representada == "ArtLustres") {
                 auxRep = "ArtLustres";
                 auxCom = 10;
@@ -1988,10 +2011,12 @@ app.post('/pedido/gerarRelatorioDeyse', (req, res) => {
       ws.cell(linhaIndex, 4).formula('SUM(C'+ linhaInicio +':C'+ linhaTotal + ')').style(valor);
       linhaIndex++;
       linhaIndex++;
-      linhaInicio = linhaIndex
+      linhaTotal = linhaIndex - 1
+      var linhaSubSoma = linhaIndex
 
       ws.cell(linhaIndex, 1).string("SOMA").style(negrito);
-      ws.cell(linhaIndex, 4).number(comissao_total).style(negrito).style(valor);;
+      ws.cell(linhaIndex, 4).formula('SUM(D1:D'+ linhaTotal + ')').style(negrito).style(valor);
+      // ws.cell(linhaIndex, 4).number(comissao_total).style(negrito).style(valor);;
 
       linhaIndex++;
       linhaIndex++;
@@ -2001,7 +2026,7 @@ app.post('/pedido/gerarRelatorioDeyse', (req, res) => {
       ws.cell(linhaIndex++, 3).string("com. 5%");
       result1.forEach(function(pedido){
           if (pedido.data.includes(mesAno)) {
-            if (pedido.usuario == "DEYSE" || pedido.cidade == "Ponta Grossa") {
+            if (pedido.usuario == "DEYSE" || pedido.cidade === "Ponta Grossa") {
               if (pedido.representada == "Reserva Ferramentas" && pedido.tipo == "Normal") {
                 auxRep = "Reserva Ferramentas";
                 auxCom = 5;
@@ -2026,7 +2051,7 @@ app.post('/pedido/gerarRelatorioDeyse', (req, res) => {
       ws.cell(linhaIndex++, 3).string("com. 6%");
       result1.forEach(function(pedido){
           if (pedido.data.includes(mesAno)) {
-            if (pedido.usuario == "DEYSE" || pedido.cidade == "Ponta Grossa") {
+            if (pedido.usuario == "DEYSE" || pedido.cidade === "Ponta Grossa") {
 
             }else{
               if (pedido.representada == "Reserva Ferramentas" && pedido.tipo == "Normal") {
@@ -2072,7 +2097,7 @@ app.post('/pedido/gerarRelatorioDeyse', (req, res) => {
       linhaInicio = linhaIndex
 
       ws.cell(linhaIndex, 1).string("TOTAL").style(negrito);
-      ws.cell(linhaIndex, 4).number(comissao_total - comissao_reserva).style(negrito).style(valor);;
+      ws.cell(linhaIndex, 4).formula('=D'+linhaSubSoma+'-'+ comissao_reserva).style(valor);
       ws.cell(linhaIndex, 5).number(439.03).style(valor);
       ws.cell(linhaIndex, 6).formula("=D"+linhaIndex+"-E"+linhaIndex).style(negrito);
 
@@ -2084,11 +2109,13 @@ app.post('/pedido/gerarRelatorioDeyse', (req, res) => {
       const nomeDoPedido = "Comissão Deyse mês de " + reformatMesAno(mesAno) + " " + total + ".xlsx";
       wb.write(nomeDoPedido);
       console.log('Arquivo local criado!');
-      // myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1C2HS3uYLkPfBJOlyUJmO64XRQ94carT5');
+      myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1C2HS3uYLkPfBJOlyUJmO64XRQ94carT5');
 
       res.redirect('/pedido/listarPedidos')
   })
 });
+
+
 
 
 app.post('/pedido/gerarPlanilhaComImposto', (req, res) => {
@@ -2180,7 +2207,7 @@ app.post('/pedido/gerarPlanilhaComImposto', (req, res) => {
 
         ws.cell(1, 1).string(result3[0].razaosocial);
         ws.cell(2, 1).string(result3[0].endereco + ", " + result3[0].numero + " - "+result3[0].bairro + " - "+result3[0].cidade + "- PR");
-        ws.cell(3, 1).string(result3[0].cnpj + " " + result3[0].ie);
+        ws.cell(3, 1).string(result3[0].cnpj + "      " + result3[0].ie);
         ws.cell(4, 1).string("EMAIL");
         ws.cell(4, 3).string(result3[0].email);
         ws.cell(1, 6).date(result1[0].data).style({numberFormat: 'dd/mm/yyyy'}).style(colunaData);
@@ -2237,7 +2264,7 @@ app.post('/pedido/gerarPlanilhaComImposto', (req, res) => {
         wb.write(nomeDoPedido);
         console.log('Arquivo local criado!');
 
-        // myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1ja984V25nMX0937K3PrBF2BfFAMyuKhJ');
+        myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1ja984V25nMX0937K3PrBF2BfFAMyuKhJ');
 
         db.collection('prazo').find().toArray((err, prazo) => {
           res.redirect('/pedido/mostrarLista/'+id)
