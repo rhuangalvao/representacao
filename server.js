@@ -4,7 +4,7 @@ const app = express()
 app.use(bodyParser.urlencoded({ extended: true}))
 const MongoClient = require('mongodb').MongoClient
 const uri = "mongodb+srv://rhuangalvao:engcomp123@representacao.fl10y.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
-var ObjectId = require('mongodb').ObjectID;
+const { ObjectId } = require('mongodb');
 
 const gdrive = require("./gdrive");
 const fs = require('fs');
@@ -30,6 +30,65 @@ app.get('/', (req, res) => {
     var cursor = db.collection('data').find()
 })
 
+//Rotas do CRUD mariana Madeiras ----------------------------------------------------------
+//CREATE
+app.get('/mariana/create', (req, res) => {
+    res.render('mariana/create.ejs')
+})
+//SHOW
+app.get('/mariana/show', (req, res) => {
+    db.collection('mariana').find().toArray((err, results) => {
+        if (err) return console.log(err)
+        res.render('mariana/show.ejs', { data: results })
+    })
+})
+app.post('/mariana/show', (req, res) => {
+    db.collection('mariana').insertOne(req.body, (err, result) => {
+        if (err) return console.log(err)
+        console.log('Salvo no Banco de Dados')
+        res.redirect('/mariana/show')
+    })
+})
+//EDIT
+app.route('/mariana/edit/:id')
+.get((req, res)=>{
+  var id = req.params.id
+  db.collection('mariana').find(ObjectId(id)).toArray((err, result) => {
+    if (err) return res.send(err)
+    res.render('mariana/edit.ejs', {data: result})
+  })
+})
+.post((req, res) =>{
+  var id = req.params.id
+  var codigo = req.body.codigo
+  var nome = req.body.nome
+  var valor = req.body.valor
+
+  db.collection('mariana').updateOne({_id: ObjectId(id)}, {
+    $set: {
+      codigo: codigo,
+      nome: nome,
+      valor: valor
+    }
+  },(err, result)=>{
+    if(err) return res.send(err)
+    res.redirect('/mariana/show')
+    console.log("Atualizado no banco de dados");
+  })
+})
+//DELETE
+app.route('/mariana/delete/:id')
+.get((req, res) =>{
+  var id = req.params.id
+  db.collection('mariana').deleteOne({_id: ObjectId(id)}, (err, result) => {
+    if(err) return res.send(500, err)
+    console.log('Deletado do Banco de dados');
+    res.redirect('/mariana/show')
+  })
+})
+
+
+
 //Rotas do CRUD PORTA ----------------------------------------------------------
 //CREATE
 app.get('/portas/create', (req, res) => {
@@ -43,7 +102,7 @@ app.get('/portas/show', (req, res) => {
     })
 })
 app.post('/portas/show', (req, res) => {
-    db.collection('portas').save(req.body, (err, result) => {
+    db.collection('portas').insertOne(req.body, (err, result) => {
         if (err) return console.log(err)
         console.log('Salvo no Banco de Dados')
         res.redirect('/portas/show')
@@ -100,7 +159,7 @@ app.get('/argacel/show', (req, res) => {
     })
 })
 app.post('/argacel/show', (req, res) => {
-    db.collection('argacel').save(req.body, (err, result) => {
+    db.collection('argacel').insertOne(req.body, (err, result) => {
         if (err) return console.log(err)
         console.log('Salvo no Banco de Dados')
         res.redirect('/argacel/show')
@@ -176,7 +235,7 @@ app.get('/fiocab/show', (req, res) => {
     })
 })
 app.post('/fiocab/show', (req, res) => {
-    db.collection('fiocab').save(req.body, (err, result) => {
+    db.collection('fiocab').insertOne(req.body, (err, result) => {
         if (err) return console.log(err)
         console.log('Salvo no Banco de Dados')
         res.redirect('/fiocab/show')
@@ -234,7 +293,7 @@ app.get('/reserva/show', (req, res) => {
     })
 })
 app.post('/reserva/show', (req, res) => {
-    db.collection('reserva').save(req.body, (err, result) => {
+    db.collection('reserva').insertOne(req.body, (err, result) => {
         if (err) return console.log(err)
         console.log('Salvo no Banco de Dados')
         res.redirect('/reserva/show')
@@ -292,7 +351,7 @@ app.get('/sulflex/show', (req, res) => {
     })
 })
 app.post('/sulflex/show', (req, res) => {
-    db.collection('sulflex').save(req.body, (err, result) => {
+    db.collection('sulflex').insertOne(req.body, (err, result) => {
         if (err) return console.log(err)
         console.log('Salvo no Banco de Dados')
         res.redirect('/sulflex/show')
@@ -350,7 +409,7 @@ app.get('/esplanada/show', (req, res) => {
     })
 })
 app.post('/esplanada/show', (req, res) => {
-    db.collection('esplanada').save(req.body, (err, result) => {
+    db.collection('esplanada').insertOne(req.body, (err, result) => {
         if (err) return console.log(err)
         console.log('Salvo no Banco de Dados')
         res.redirect('/esplanada/show')
@@ -408,7 +467,7 @@ app.get('/artlustres/show', (req, res) => {
     })
 })
 app.post('/artlustres/show', (req, res) => {
-    db.collection('artlustres').save(req.body, (err, result) => {
+    db.collection('artlustres').insertOne(req.body, (err, result) => {
         if (err) return console.log(err)
         console.log('Salvo no Banco de Dados')
         res.redirect('/artlustres/show')
@@ -468,7 +527,7 @@ app.get('/tucano/show', (req, res) => {
     })
 })
 app.post('/tucano/show', (req, res) => {
-    db.collection('tucano').save(req.body, (err, result) => {
+    db.collection('tucano').insertOne(req.body, (err, result) => {
         if (err) return console.log(err)
         console.log('Salvo no Banco de Dados')
         res.redirect('/tucano/show')
@@ -570,7 +629,7 @@ app.get('/portas/valor/show', (req, res) => {
     })
 })
 app.post('/portas/valor/show', (req, res) => {
-    db.collection('portasValor').save(req.body, (err, result) => {
+    db.collection('portasValor').insertOne(req.body, (err, result) => {
         if (err) return console.log(err)
         console.log('Salvo no Banco de Dados')
         res.redirect('/portas/valor/show')
@@ -625,7 +684,7 @@ app.get('/empresa/show', (req, res) => {
     })
 })
 app.post('/empresa/show', (req, res) => {
-    db.collection('empresa').save(req.body, (err, result) => {
+    db.collection('empresa').insertOne(req.body, (err, result) => {
         if (err) return console.log(err)
         console.log('Salvo no Banco de Dados')
         res.redirect('/empresa/show')
@@ -706,7 +765,7 @@ app.get('/cidade/visita', (req, res) => {
 })
 
 app.post('/cidade/salvarvisita', (req, res) => {
-  db.collection('visita').save(req.body, (err, result) => {
+  db.collection('visita').insertOne(req.body, (err, result) => {
     if (err) return console.log(err)
     res.redirect('/cidade/visita')
   })
@@ -735,7 +794,7 @@ app.get('/pedido/create', (req, res) => {
 })
 
 app.post('/pedido/salvarempresa', (req, res) => {
-  db.collection('pedido').save(req.body, (err, result) => {
+  db.collection('pedido').insertOne(req.body, (err, result) => {
     if (err) return console.log(err)
   })
   db.collection('empresa').find({_id: ObjectId(req.body.razaosocial_id)}).toArray((err, result1) => {
@@ -755,6 +814,8 @@ app.post('/pedido/salvarempresa', (req, res) => {
     res.redirect('/pedido/create/adicionarProdutoSalete/'+pedido)
   }else if (req.body.representada == "Argamassas Argacel") {
     res.redirect('/pedido/create/adicionarProdutoArgacel/'+pedido)
+  }else if (req.body.representada == "Mariana Madeiras") {
+    res.redirect('/pedido/create/adicionarProdutoMariana/'+pedido)
   }else if (req.body.representada == "FIOCAB") {
     res.redirect('/pedido/create/adicionarProdutoFiocab/'+pedido)
   }else if (req.body.representada == "Reserva Ferramentas") {
@@ -783,6 +844,13 @@ app.get('/pedido/create/adicionarProdutoSalete/:id', (req, res) => {
 app.get('/pedido/create/adicionarProdutoArgacel/:id', (req, res) => {
   var pedido_id = req.params.id
   db.collection('argacel').find().toArray((err, results1) => {
+      if (err) return console.log(err)
+        res.render('pedido/addProduto.ejs', { data1: results1, pedido_id: pedido_id })
+  })
+})
+app.get('/pedido/create/adicionarProdutoMariana/:id', (req, res) => {
+  var pedido_id = req.params.id
+  db.collection('mariana').find().toArray((err, results1) => {
       if (err) return console.log(err)
         res.render('pedido/addProduto.ejs', { data1: results1, pedido_id: pedido_id })
   })
@@ -831,7 +899,7 @@ app.get('/pedido/create/adicionarProdutoTucano/:id', (req, res) => {
 })
 
 app.post('/pedido/salvarproduto', (req, res) => {
-  db.collection('produto').save(req.body, (err, result) => {
+  db.collection('produto').insertOne(req.body, (err, result) => {
     if (err) return console.log(err)
     console.log('Salvo novo produto')
     var pedido = req.body.pedido_id
@@ -840,6 +908,8 @@ app.post('/pedido/salvarproduto', (req, res) => {
         res.redirect('/pedido/create/adicionarProdutoSalete/'+pedido)
       }else if(result1[0].representada == "Argamassas Argacel"){
         res.redirect('/pedido/create/adicionarProdutoArgacel/'+pedido)
+      }else if(result1[0].representada == "Mariana Madeiras"){
+        res.redirect('/pedido/create/adicionarProdutoMariana/'+pedido)
       }else if (result1[0].representada == "FIOCAB") {
         res.redirect('/pedido/create/adicionarProdutoFiocab/'+pedido)
       }else if (result1[0].representada == "Reserva Ferramentas") {
@@ -974,6 +1044,8 @@ app.get('/pedido/mostrarLista/:id', (req, res) => {
           var representadaAuxiliar = ""
           if(result1[0].representada == "Argamassas Argacel"){
             representadaAuxiliar = "argacel"
+          }else if (result1[0].representada == "Mariana Madeiras") {
+            representadaAuxiliar = "mariana"
           }else if (result1[0].representada == "FIOCAB") {
             representadaAuxiliar = "fiocab"
           }else if (result1[0].representada == "Reserva Ferramentas") {
@@ -1072,6 +1144,34 @@ app.route('/produto/editProdutoArgacel/:id')
     if (err) return res.send(err)
     pedido_id_edit = result[0].pedido_id
     db.collection('argacel').find().toArray((err, results1) => {
+        if (err) return console.log(err)
+        res.render('pedido/editProduto.ejs', {data: result ,data1: results1 })
+    })
+  })
+})
+.post((req, res) =>{
+  var id = req.params.id
+  var quantidade = req.body.quantidade
+  var codigo = req.body.codigo
+
+  db.collection('produto').updateOne({_id: ObjectId(id)}, {
+    $set: {
+      quantidade: quantidade,
+      codigo: codigo,
+    }
+  },(err, result)=>{
+    if(err) return res.send(err)
+    res.redirect('/pedido/mostrarLista/'+pedido_id_edit)
+    })
+    console.log("Atualizado no banco de dados");
+})
+app.route('/produto/editProdutoMariana/:id')
+.get((req, res)=>{
+  var id = req.params.id
+  db.collection('produto').find(ObjectId(id)).toArray((err, result) => {
+    if (err) return res.send(err)
+    pedido_id_edit = result[0].pedido_id
+    db.collection('mariana').find().toArray((err, results1) => {
         if (err) return console.log(err)
         res.render('pedido/editProduto.ejs', {data: result ,data1: results1 })
     })
@@ -1307,6 +1407,21 @@ app.post('/pedido/gerarPlanilha', (req, res) => {
               centerHorizontal: true,
             },
           };
+        }else if(result1[0].representada == "Mariana Madeiras"){
+          var options = {
+            headerFooter: {
+              evenHeader: '&24&PEDIDO MARIANA MADEIRAS&24',
+              firstHeader: '&24PEDIDO MARIANA MADEIRAS&24',
+              oddHeader: '&24PEDIDO MARIANA MADEIRAS&24',
+            },
+            margins: {
+              left: 0.3,
+              right: 0.3,
+            },
+            printOptions: {
+              centerHorizontal: true,
+            },
+          };
         }else if(result1[0].representada == "Portas Salete"){
           var options = {
             headerFooter: {
@@ -1526,6 +1641,8 @@ app.post('/pedido/gerarPlanilha', (req, res) => {
 
         if (result1[0].representada == "Argamassas Argacel") {
           myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1EViEqk_UvALkAu4d2o6MNbdlN0p8fi47');
+        }else if(result1[0].representada == "Mariana Madeiras"){
+          myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1hAx4Yq92A4t_PVJKoocsfEdS-W8uMqKQ');
         }else if(result1[0].representada == "Portas Salete"){
           myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1-bD4Zi3QrT7WQWuksphPCCvGPKh2HGv6');
         }else if(result1[0].representada == "FIOCAB"){
@@ -1672,6 +1789,9 @@ app.post('/pedido/gerarRelatorio', (req, res) => {
     }else if (result1[0].representada == "Argamassas Argacel") {
       auxRep = "Argamassas Argacel";
       auxCom = 4;
+    }else if (result1[0].representada == "Mariana Madeiras") {
+      auxRep = "Mariana Madeiras";
+      auxCom = 5;
     }else if (result1[0].representada == "FIOCAB") {
       auxRep = "FIOCAB";
       auxCom = 3;
@@ -1718,7 +1838,7 @@ app.post('/pedido/gerarRelatorio', (req, res) => {
           linhaIndex++;
         }
       })
-    }else if (auxRep == "Argamassas Argacel" || auxRep == "FIOCAB") {
+    }else if (auxRep == "Argamassas Argacel" || auxRep == "FIOCAB" || auxRep == "Mariana Madeiras") {
       result1.forEach(function(pedido){
         if (pedido.data.includes(mesAno)) {
           ws.cell(linhaIndex, 1).string(pedido.empresa_nome);

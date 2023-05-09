@@ -100,6 +100,8 @@
                 <td><%= details.valor.replace(".", ",") %></td>
                 <% if(pedido[0].representada == "Argamassas Argacel"){ %>
                 <td><a href="/produto/editProdutoArgacel/<%= details._id %>">Editar</a> - <a href="/produto/delete/<%= details._id %>">Deletar</a></td>
+                <% }else if(pedido[0].representada == "Mariana Madeiras"){ %>
+                <td><a href="/produto/editProdutoMariana/<%= details._id %>">Editar</a> - <a href="/produto/delete/<%= details._id %>">Deletar</a></td>
                 <% }else if(pedido[0].representada == "FIOCAB"){ %>
                 <td><a href="/produto/editProdutoFiocab/<%= details._id %>">Editar</a> - <a href="/produto/delete/<%= details._id %>">Deletar</a></td>
                 <% }else if(pedido[0].representada == "Reserva Ferramentas"){ %>
