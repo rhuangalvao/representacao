@@ -1610,12 +1610,7 @@ app.post('/pedido/gerarPlanilha', (req, res) => {
         linhaIndex = linhaIndex +3;
 
         if (result1[0].representada == "Portas Salete") {
-          ws.cell(linhaIndex++, 2).string("MANDAR :").style(negrito);
-          ws.cell(linhaIndex++, 2).string("COM MARCA E REFERÊNCIA NA PORTA.").style(negrito);
-          ws.cell(linhaIndex++, 2).string("CAPRICHAR NA QUALIDADE.").style(negrito);
-          ws.cell(linhaIndex++, 2).string("MANDAR A NF CONFORME ESCRITO NO PEDIDO.").style(negrito);
-          ws.cell(linhaIndex++, 2).string("MANDAR BOLETO JUNTO COM A NF.").style(negrito);
-          ws.cell(linhaIndex++, 2).string("FURADAS, AS QUE NÃO TEM LADO").style(negrito);
+          ws.cell(linhaIndex++, 2).string("FURADAS").style(negrito);
         }
 
         linhaIndex++;
@@ -1644,13 +1639,13 @@ app.post('/pedido/gerarPlanilha', (req, res) => {
         }else if(result1[0].representada == "Mariana Madeiras"){
           myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1hAx4Yq92A4t_PVJKoocsfEdS-W8uMqKQ');
         }else if(result1[0].representada == "Portas Salete"){
-          myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1-bD4Zi3QrT7WQWuksphPCCvGPKh2HGv6');
+          myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '12xlW0z7xCnEgpMCbdM1_dvey2Im1BRmH');
         }else if(result1[0].representada == "FIOCAB"){
-          myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '19cJAyQT4WiRQT60XcRLHePMPLDQYzaUz');
+          myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1gjpS8rJjx0CLgznM0jlqyCws0piOkUvf');
         }else if(result1[0].representada == "Reserva Ferramentas"){
-          myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '18-MJWo22dyKqvKMAuN8XgCEmvq_nQBc6');
+          myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1TgaMqhlZH65ckYqZqpbnJZcBXZzYjtA_');
         }else if(result1[0].representada == "Sulflex"){
-          myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1EzAYx8PjyMBgzwrJhttDmwRCFQU8r92B');
+          myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1XPwxkSxuEER878MZQeuKpU9-KKxgRQ3K');
         }else if(result1[0].representada == "Vassouras Esplanada"){
           myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1UYC7hGp1OXNAU7FQqDMCEhv7ThiXmfz3');
         }else if(result1[0].representada == "ArtLustres"){
