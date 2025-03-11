@@ -1816,7 +1816,7 @@ app.post('/pedido/gerarRelatorio', (req, res) => {
         if (pedido.data.includes(mesAno) && pedido.cidade != "Ponta Grossa") {
           ws.cell(linhaIndex, 1).string(pedido.empresa_nome);
           ws.cell(linhaIndex, 3).number(parseFloat(pedido.valor_total.replace(".", ""))).style(valor);
-          ws.cell(linhaIndex, 4).formula('=C'+linhaIndex+'*'+auxCom+"/100").style(valor);
+          ws.cell(linhaIndex, 4).formula('C'+linhaIndex+'*'+auxCom+"/100").style(valor);
           comissao_total = comissao_total + (parseFloat(pedido.valor_total.replace(".", "")) * auxCom/100)
           linhaIndex++;
         }
@@ -1828,7 +1828,7 @@ app.post('/pedido/gerarRelatorio', (req, res) => {
         if (pedido.data.includes(mesAno) && pedido.cidade == "Ponta Grossa") {
           ws.cell(linhaIndex, 1).string(pedido.empresa_nome);
           ws.cell(linhaIndex, 3).number(parseFloat(pedido.valor_total.replace(".", ""))).style(valor);
-          ws.cell(linhaIndex, 4).formula('=C'+linhaIndex+'*'+auxCom+"/100").style(valor);
+          ws.cell(linhaIndex, 4).formula('C'+linhaIndex+'*'+auxCom+"/100").style(valor);
           comissao_total = comissao_total + (parseFloat(pedido.valor_total.replace(".", "")) * auxCom/100)
           linhaIndex++;
         }
@@ -1838,7 +1838,7 @@ app.post('/pedido/gerarRelatorio', (req, res) => {
         if (pedido.data.includes(mesAno)) {
           ws.cell(linhaIndex, 1).string(pedido.empresa_nome);
           ws.cell(linhaIndex, 3).number(parseFloat(pedido.valor_total.replace(".", ""))).style(valor);
-          ws.cell(linhaIndex, 4).formula('=C'+linhaIndex+'*'+auxCom+"/100").style(valor);
+          ws.cell(linhaIndex, 4).formula('C'+linhaIndex+'*'+auxCom+"/100").style(valor);
           comissao_total = comissao_total + (parseFloat(pedido.valor_total.replace(".", "")) * auxCom/100)
           linhaIndex++;
         }
@@ -1848,7 +1848,7 @@ app.post('/pedido/gerarRelatorio', (req, res) => {
         if (pedido.data.includes(mesAno) && pedido.cidade != "Ponta Grossa" && pedido.tipo == "Normal") {
           ws.cell(linhaIndex, 1).string(pedido.empresa_nome);
           ws.cell(linhaIndex, 3).number(parseFloat(pedido.valor_total.replace(".", ""))).style(valor);
-          ws.cell(linhaIndex, 4).formula('=C'+linhaIndex+'*'+auxCom+"/100").style(valor);
+          ws.cell(linhaIndex, 4).formula('C'+linhaIndex+'*'+auxCom+"/100").style(valor);
           comissao_total = comissao_total + (parseFloat(pedido.valor_total.replace(".", "")) * auxCom/100)
           linhaIndex++;
         }
@@ -1859,7 +1859,7 @@ app.post('/pedido/gerarRelatorio', (req, res) => {
         if (pedido.data.includes(mesAno) && pedido.cidade == "Ponta Grossa" && pedido.tipo == "Normal") {
           ws.cell(linhaIndex, 1).string(pedido.empresa_nome);
           ws.cell(linhaIndex, 3).number(parseFloat(pedido.valor_total.replace(".", ""))).style(valor);
-          ws.cell(linhaIndex, 4).formula('=C'+linhaIndex+'*'+auxCom+"/100").style(valor);
+          ws.cell(linhaIndex, 4).formula('C'+linhaIndex+'*'+auxCom+"/100").style(valor);
           comissao_total = comissao_total + (parseFloat(pedido.valor_total.replace(".", "")) * auxCom/100)
           linhaIndex++;
         }
@@ -1870,7 +1870,7 @@ app.post('/pedido/gerarRelatorio', (req, res) => {
         if (pedido.data.includes(mesAno) && pedido.cidade == "Ponta Grossa" && pedido.tipo == "Mesa") {
           ws.cell(linhaIndex, 1).string(pedido.empresa_nome);
           ws.cell(linhaIndex, 3).number(parseFloat(pedido.valor_total.replace(".", ""))).style(valor);
-          ws.cell(linhaIndex, 4).formula('=C'+linhaIndex+'*'+auxCom+"/100").style(valor);
+          ws.cell(linhaIndex, 4).formula('C'+linhaIndex+'*'+auxCom+"/100").style(valor);
           comissao_total = comissao_total + (parseFloat(pedido.valor_total.replace(".", "")) * auxCom/100)
           linhaIndex++;
         }
@@ -1896,7 +1896,7 @@ app.post('/pedido/gerarRelatorio', (req, res) => {
     wb.write(nomeDoPedido);
     console.log('Arquivo local criado!');
 
-    myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1_HLuAswtxTrLXpi6cRp1Hhfki6aoccBY');
+    myTimeout = setTimeout(uploadFile, 3000, nomeDoPedido, '1BWyV7PylUJN9_bNE9VwFkM_mOL7k-1so');
 
     res.redirect('/pedido/listarPedidos')
   })
